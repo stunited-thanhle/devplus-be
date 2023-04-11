@@ -1,6 +1,5 @@
 import { User } from '@entities/user.entity'
 import { Request, Response } from 'express'
-import dataSource from '@shared/config/data-source.config'
 
 export class UsersController {
   async login(req: Request, res: Response) {
