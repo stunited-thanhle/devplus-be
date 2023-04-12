@@ -16,11 +16,22 @@ export class RequestDayOffController {
       reason,
     }).save()
 
-    // const newRequest = new RequestDayOff()
-    // newRequest.from = from
-    // newRequest.to = to
-    // newRequest.reason = reason
-    // return res.status(200).json('OK')
+    const user = await User.find({
+      where: {
+        id: userId,
+      },
+    })
+    const group = await Group.find({
+      where: {
+        id: groupId,
+      },
+    })
+
+    const data = RequestAppove.create({
+      status: true,
+      user: user[0],
+      group: group[0],
+    })
 
     return res.status(201).json(result)
   }
@@ -37,17 +48,18 @@ export class RequestDayOffController {
       },
     })
 
-    // const data = RequestAppove.create({
-    //   status: true,
-    //   group: group,
-    // })
-
-    // const newRequest = new RequestDayOff()
-    // newRequest.from = from
-    // newRequest.to = to
-    // newRequest.reason = reason
-    // return res.status(200).json('OK')
+    const data = RequestAppove.create({
+      status: true,
+      user: user[0],
+      group: group[0],
+    })
 
     return res.status(201).json(data)
+  }
+
+  async updateRequestApproval(req: Request, res: Response) {
+    const { requestId, from, to, reason } = req.body
+
+    res.json(req.params.id)
   }
 }

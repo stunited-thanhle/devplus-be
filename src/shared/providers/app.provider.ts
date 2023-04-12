@@ -20,9 +20,8 @@ class AppProvider {
   }
 
   public listen() {
-    this.app.listen(process.env.APP_PORT, () => {
-      console.log(process.env.APP_PORT)
-      console.log('adad')
+    this.app.listen(process.env.APP_PORT || 5000, () => {
+      console.log('This app is running on port:', process.env.APP_PORT || 5000)
     })
   }
 

@@ -9,9 +9,12 @@ import {
   OneToOne,
   JoinColumn,
   OneToMany,
+  BeforeInsert,
 } from 'typeorm'
 import { Role } from './role.entity'
 import { RequestAppove } from './requestApprove.entity'
+import * as bcrypt from 'bcryptjs'
+import * as jwt from 'jsonwebtoken'
 
 export type genderArray = '0' | '1' | '2'
 @Entity({ name: 'users' })
@@ -24,6 +27,9 @@ export class User extends BaseEntity {
 
   @Column({ nullable: false, type: 'varchar', length: 250 })
   email: string
+
+  @Column('text')
+  password: string
 
   @Column({
     type: 'enum',
@@ -41,10 +47,30 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date
 
-  @OneToOne(() => Role)
   @JoinColumn()
+  @OneToOne(() => Role, { eager: true })
   role: Role
 
   @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.user)
   requestApproves: RequestAppove[]
+
+  @BeforeInsert()
+  async hasPassword() {
+    this.password = await bcrypt.hash(this.password, 10)
+  }
+  async comparePassword(attempt: string) {
+    return await bcrypt.compare(attempt, this.password)
+  }
+  get token() {
+    const { id, username, role } = this
+    return jwt.sign(
+      {
+        id,
+        username,
+        role: role.name,
+      },
+      process.env.SECRET,
+      { expiresIn: '7d' },
+    )
+  }
 }

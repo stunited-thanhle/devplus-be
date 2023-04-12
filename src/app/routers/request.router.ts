@@ -17,6 +17,10 @@ class RequestDayOffRoute {
     this.router
       .route('/request-approval')
       .post(this.requestDayoffController.createRequestApproval)
+
+    this.router
+      .route('/:id')
+      .put(this.requestDayoffController.updateRequestApproval)
   }
 }
 
