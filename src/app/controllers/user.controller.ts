@@ -6,7 +6,6 @@ export class UsersController {
     const data = await User.create({
       email: 'kent@gmail.com',
       username: 'thanh1',
-      birthday: '2022/10/10',
     }).save()
     console.log(data)
     return res.status(200).json(data)

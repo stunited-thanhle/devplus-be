@@ -8,13 +8,25 @@ import {
   DeleteDateColumn,
 } from 'typeorm'
 
+export type UserRoleArray = 'admin' | 'manager' | 'master' | 'staff'
+
+enum RoleEnum {
+  Admin = 'admin',
+  Manager = 'manager',
+  Master = 'master',
+  Staff = 'staff',
+}
 @Entity({ name: 'roles' })
 export class Role extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ name: 'name' })
-  name: string
+  @Column({
+    type: 'enum',
+    enum: RoleEnum,
+    default: RoleEnum.Staff,
+  })
+  name: UserRoleArray
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date

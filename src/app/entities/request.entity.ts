@@ -1,7 +1,7 @@
 import {
+  Column,
   Entity,
   PrimaryGeneratedColumn,
-  Column,
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
@@ -10,27 +10,22 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm'
-import { Role } from './role.entity'
+import { User } from './user.entity'
 import { RequestAppove } from './requestApprove.entity'
 
-export type genderArray = '0' | '1' | '2'
-@Entity({ name: 'users' })
-export class User extends BaseEntity {
+@Entity({ name: 'requests' })
+export class Request extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ nullable: false, type: 'varchar', length: 50 })
-  username: string
+  @Column({ name: 'from' })
+  from: Date
 
-  @Column({ nullable: false, type: 'varchar', length: 250 })
-  email: string
+  @Column({ name: 'to' })
+  to: Date
 
-  @Column({
-    type: 'enum',
-    enum: ['0', '1', '2'],
-    default: '2',
-  })
-  gender: genderArray
+  @Column({ name: 'reason' })
+  reason: string
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date
@@ -41,10 +36,6 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date
 
-  @OneToOne(() => Role)
-  @JoinColumn()
-  role: Role
-
-  @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.user)
+  @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.request)
   requestApproves: RequestAppove[]
 }
