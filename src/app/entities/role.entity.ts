@@ -6,7 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm'
+import { User } from './user.entity'
 
 enum RoleEnum {
   Admin = 'admin',
@@ -34,4 +36,7 @@ export class Role extends BaseEntity {
 
   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date
+
+  @OneToMany(() => User, (user) => user.role)
+  users: User[]
 }
