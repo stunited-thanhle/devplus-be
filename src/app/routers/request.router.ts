@@ -13,10 +13,9 @@ class RequestDayOffRoute {
   }
 
   private initializeRoutes() {
+    this.router.route('/').get(this.requestDayoffController.getRequests)
+
     this.router.route('/').post(this.requestDayoffController.createDayOff)
-    this.router
-      .route('/request-approval')
-      .post(this.requestDayoffController.createRequestApproval)
 
     this.router
       .route('/:id')
