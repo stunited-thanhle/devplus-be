@@ -9,13 +9,8 @@ import {
   OneToMany,
 } from 'typeorm'
 import { User } from './user.entity'
+import { Roles } from '@shared/enums'
 
-enum RoleEnum {
-  Admin = 'admin',
-  Manager = 'manager',
-  Master = 'master',
-  Staff = 'staff',
-}
 @Entity({ name: 'roles' })
 export class Role extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -23,10 +18,10 @@ export class Role extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: RoleEnum,
-    default: RoleEnum.Staff,
+    enum: Roles,
+    default: Roles.Staff,
   })
-  name: RoleEnum
+  name: Roles
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date
