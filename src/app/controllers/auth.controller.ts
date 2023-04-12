@@ -2,15 +2,27 @@ import { User } from '@entities/user.entity'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-
+import * as ValidateHelper from '@shared/helper'
 export class AuthController {
   async login(req: Request, res: Response) {
     const { email, password } = req.body
+    const fields = ['email', 'password']
+
+    const error = ValidateHelper.validate(fields, req.body)
+
+    if (error.length) {
+      const response: ErrorBody = {
+        message: error,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
 
     const user = await User.findOne({
       where: {
         email,
       },
+      relations: ['role'],
     })
 
     if (!user || !(await user.comparePassword(password))) {

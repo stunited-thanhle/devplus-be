@@ -6,10 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToOne,
-  JoinColumn,
   OneToMany,
   BeforeInsert,
+  ManyToOne,
 } from 'typeorm'
 import { Role } from './role.entity'
 import { RequestAppove } from './requestApprove.entity'
@@ -47,8 +46,7 @@ export class User extends BaseEntity {
   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date
 
-  @JoinColumn()
-  @OneToOne(() => Role, { eager: true })
+  @ManyToOne(() => Role, (role) => role.users)
   role: Role
 
   @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.user)
