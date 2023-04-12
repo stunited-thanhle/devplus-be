@@ -1,0 +1,271 @@
+From e18b8b1b4ef9c0320f76128668b40788012cadf5 Mon Sep 17 00:00:00 2001
+From: Thanh Le <thanh.le@stunited.vn>
+Date: Wed, 12 Apr 2023 10:13:15 +0700
+Subject: [PATCH] feat: update
+
+---
+ package.json                              |  1 +
+ src/app/controllers/auth.controller.ts    | 35 +++++++++++++++++++++++
+ src/app/controllers/request.controller.ts |  2 +-
+ src/app/controllers/user.controller.ts    | 11 ++++++-
+ src/app/entities/role.entity.ts           |  4 +--
+ src/app/entities/user.entity.ts           | 28 +++++++++++++++++-
+ src/app/routers/auth.route.ts             | 16 +++++++++++
+ src/app/routers/index.ts                  |  1 +
+ src/shared/interface/errorInterface.ts    |  4 +++
+ src/shared/providers/app.provider.ts      |  5 ++--
+ yarn.lock                                 |  5 ++++
+ 11 files changed, 103 insertions(+), 9 deletions(-)
+ create mode 100644 src/app/controllers/auth.controller.ts
+ create mode 100644 src/app/routers/auth.route.ts
+ create mode 100644 src/shared/interface/errorInterface.ts
+
+diff --git a/package.json b/package.json
+index 6ab674c..241f46b 100644
+--- a/package.json
++++ b/package.json
+@@ -12,6 +12,7 @@
+     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
+   },
+   "dependencies": {
++    "bcryptjs": "^2.4.3",
+     "class-transformer": "^0.5.1",
+     "class-validator": "^0.13.2",
+     "compression": "^1.7.4",
+diff --git a/src/app/controllers/auth.controller.ts b/src/app/controllers/auth.controller.ts
+new file mode 100644
+index 0000000..1f1e927
+--- /dev/null
++++ b/src/app/controllers/auth.controller.ts
+@@ -0,0 +1,35 @@
++import { User } from '@entities/user.entity'
++import { ErrorBody } from '@shared/interface/errorInterface'
++import { Request, Response } from 'express'
++import { StatusCodes } from 'http-status-codes'
++
++export class AuthController {
++  async login(req: Request, res: Response) {
++    const { email, password } = req.body
++
++    const user = await User.findOne({
++      where: {
++        email,
++      },
++    })
++
++    if (!user || !(await user.comparePassword(password))) {
++      const responseData: ErrorBody = {
++        message: 'Invalid email or password',
++        statusCode: StatusCodes.UNAUTHORIZED,
++      }
++      return res.status(StatusCodes.UNAUTHORIZED).json(responseData)
++    }
++
++    const token = user.token
++
++    delete user.password
++
++    return res.status(200).json({ user, token })
++  }
++
++  async getUsers(req: Request, res: Response) {
++    const data = await User.find({})
++    return res.status(200).json(data)
++  }
++}
+diff --git a/src/app/controllers/request.controller.ts b/src/app/controllers/request.controller.ts
+index 2d353e8..78d79f1 100644
+--- a/src/app/controllers/request.controller.ts
++++ b/src/app/controllers/request.controller.ts
+@@ -48,6 +48,6 @@ export class RequestDayOffController {
+     // newRequest.reason = reason
+     // return res.status(200).json('OK')
+ 
+-    return res.status(201).json(data)
++    return res.status(201).json('')
+   }
+ }
+diff --git a/src/app/controllers/user.controller.ts b/src/app/controllers/user.controller.ts
+index 2f95ea0..c59c4a7 100644
+--- a/src/app/controllers/user.controller.ts
++++ b/src/app/controllers/user.controller.ts
+@@ -1,13 +1,22 @@
++import { Role } from '@entities/role.entity'
+ import { User } from '@entities/user.entity'
+ import { Request, Response } from 'express'
+ 
+ export class UsersController {
+   async login(req: Request, res: Response) {
++    const staff = await Role.findOne({
++      where: {
++        id: 1,
++      },
++    })
++
+     const data = await User.create({
+       email: 'kent@gmail.com',
+       username: 'thanh1',
++      password: '123123',
++      role: staff,
+     }).save()
+-    console.log(data)
++
+     return res.status(200).json(data)
+   }
+ 
+diff --git a/src/app/entities/role.entity.ts b/src/app/entities/role.entity.ts
+index 82f59c7..14515db 100644
+--- a/src/app/entities/role.entity.ts
++++ b/src/app/entities/role.entity.ts
+@@ -8,8 +8,6 @@ import {
+   DeleteDateColumn,
+ } from 'typeorm'
+ 
+-export type UserRoleArray = 'admin' | 'manager' | 'master' | 'staff'
+-
+ enum RoleEnum {
+   Admin = 'admin',
+   Manager = 'manager',
+@@ -26,7 +24,7 @@ export class Role extends BaseEntity {
+     enum: RoleEnum,
+     default: RoleEnum.Staff,
+   })
+-  name: UserRoleArray
++  name: RoleEnum
+ 
+   @CreateDateColumn({ nullable: false, name: 'created_at' })
+   createdAt: Date
+diff --git a/src/app/entities/user.entity.ts b/src/app/entities/user.entity.ts
+index 3a652ab..3e5977a 100644
+--- a/src/app/entities/user.entity.ts
++++ b/src/app/entities/user.entity.ts
+@@ -9,9 +9,12 @@ import {
+   OneToOne,
+   JoinColumn,
+   OneToMany,
++  BeforeInsert,
+ } from 'typeorm'
+ import { Role } from './role.entity'
+ import { RequestAppove } from './requestApprove.entity'
++import * as bcrypt from 'bcryptjs'
++import * as jwt from 'jsonwebtoken'
+ 
+ export type genderArray = '0' | '1' | '2'
+ @Entity({ name: 'users' })
+@@ -25,6 +28,9 @@ export class User extends BaseEntity {
+   @Column({ nullable: false, type: 'varchar', length: 250 })
+   email: string
+ 
++  @Column('text')
++  password: string
++
+   @Column({
+     type: 'enum',
+     enum: ['0', '1', '2'],
+@@ -41,10 +47,30 @@ export class User extends BaseEntity {
+   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
+   deletedAt: Date
+ 
+-  @OneToOne(() => Role)
+   @JoinColumn()
++  @OneToOne(() => Role, { eager: true })
+   role: Role
+ 
+   @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.user)
+   requestApproves: RequestAppove[]
++
++  @BeforeInsert()
++  async hasPassword() {
++    this.password = await bcrypt.hash(this.password, 10)
++  }
++  async comparePassword(attempt: string) {
++    return await bcrypt.compare(attempt, this.password)
++  }
++  get token() {
++    const { id, username, role } = this
++    return jwt.sign(
++      {
++        id,
++        username,
++        role: role.name,
++      },
++      process.env.SECRET,
++      { expiresIn: '7d' },
++    )
++  }
+ }
+diff --git a/src/app/routers/auth.route.ts b/src/app/routers/auth.route.ts
+new file mode 100644
+index 0000000..6cc58ca
+--- /dev/null
++++ b/src/app/routers/auth.route.ts
+@@ -0,0 +1,16 @@
++import { AuthController } from '@controllers/auth.controller'
++import { Router } from 'express'
++
++class AuthRoute {
++  public path = '/auth'
++  public router = Router()
++  private authController: AuthController
++  constructor() {
++    this.authController = new AuthController()
++    this.initializeRoutes()
++  }
++  private initializeRoutes() {
++    this.router.route('/login').post(this.authController.login)
++  }
++}
++export const authRoute = new AuthRoute()
+diff --git a/src/app/routers/index.ts b/src/app/routers/index.ts
+index 97f9180..1ddcbe3 100644
+--- a/src/app/routers/index.ts
++++ b/src/app/routers/index.ts
+@@ -1,2 +1,3 @@
+ export * from './user.route'
+ export * from './request.router'
++export * from './auth.route'
+diff --git a/src/shared/interface/errorInterface.ts b/src/shared/interface/errorInterface.ts
+new file mode 100644
+index 0000000..f09e3df
+--- /dev/null
++++ b/src/shared/interface/errorInterface.ts
+@@ -0,0 +1,4 @@
++export interface ErrorBody {
++  message: string
++  statusCode: number
++}
+diff --git a/src/shared/providers/app.provider.ts b/src/shared/providers/app.provider.ts
+index 021f3b4..ca95192 100644
+--- a/src/shared/providers/app.provider.ts
++++ b/src/shared/providers/app.provider.ts
+@@ -20,9 +20,8 @@ class AppProvider {
+   }
+ 
+   public listen() {
+-    this.app.listen(process.env.APP_PORT, () => {
+-      console.log(process.env.APP_PORT)
+-      console.log('adad')
++    this.app.listen(process.env.APP_PORT || 5000, () => {
++      console.log('This app is running on port:', process.env.APP_PORT || 5000)
+     })
+   }
+ 
+diff --git a/yarn.lock b/yarn.lock
+index ba22668..7c348ae 100644
+--- a/yarn.lock
++++ b/yarn.lock
+@@ -1015,6 +1015,11 @@ base64-js@^1.3.0, base64-js@^1.3.1:
+   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
+   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
+ 
++bcryptjs@^2.4.3:
++  version "2.4.3"
++  resolved "https://registry.yarnpkg.com/bcryptjs/-/bcryptjs-2.4.3.tgz#9ab5627b93e60621ff7cdac5da9733027df1d0cb"
++  integrity sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==
++
+ bignumber.js@^9.0.0:
+   version "9.1.1"
+   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.1.tgz#c4df7dc496bd849d4c9464344c1aa74228b4dac6"
+-- 
+2.25.1
+
