@@ -9,12 +9,12 @@ export const authentication = async (
   next: NextFunction,
 ) => {
   try {
-    const token = req.headers['Authorization']
+    const token = req.header('Authorization').split(' ')[1]
     if (!token)
       return res
         .status(StatusCodes.UNAUTHORIZED)
         .json({ msg: 'Invalid Authentication' })
-    const decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET) as {
+    const decode = jwt.verify(token, process.env.SECRET) as {
       id: number
     }
     if (!decode)
@@ -26,7 +26,7 @@ export const authentication = async (
       return res
         .status(StatusCodes.UNAUTHORIZED)
         .json({ msg: 'Invalid Authentication' })
-    req.user = user
+    req.user = decode
     return next()
   } catch (error: any) {
     return res.status(StatusCodes.BAD_REQUEST).json({ msg: error.message })

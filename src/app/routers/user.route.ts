@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { UsersController } from '@app/controllers/user.controller'
-import { authentication } from '@shared/middleware'
+import { authentication, authorization } from '@shared/middleware'
+import { Roles } from '@shared/enums'
 
 class UsersRoute {
   public path = '/users'
@@ -17,7 +18,7 @@ class UsersRoute {
     this.router.route('/login').post(this.usersController.create)
     this.router
       .route('/')
-      .all(authentication)
+      // .all(authentication, authorization([Roles.Admin]))
       .get(this.usersController.getUsers)
     // this.router.route('/:id').get()
   }
