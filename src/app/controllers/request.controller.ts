@@ -65,9 +65,10 @@ export class RequestDayOffController {
   }
 
   async updateRequestApproval(req: Request, res: Response) {
-    const { requestId, from, to, reason } = req.body
+    const { from, to, reason } = req.body
+    const requestId = parseInt(req.params.id)
 
-    const fields = ['requestId', 'to', 'from', 'reason']
+    const fields = ['to', 'from', 'reason']
 
     const error = ValidateHelper.validate(fields, req.body)
 
