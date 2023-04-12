@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { UsersController } from '@app/controllers/user.controller'
+import { authentication } from '@shared/middleware'
 
 class UsersRoute {
   public path = '/users'
@@ -14,7 +15,11 @@ class UsersRoute {
 
   private initializeRoutes() {
     this.router.route('/login').post(this.usersController.create)
-    this.router.route('/').get(this.usersController.getUsers)
+    this.router
+      .route('/')
+      .all(authentication)
+      .get(this.usersController.getUsers)
+    // this.router.route('/:id').get()
   }
 }
 
