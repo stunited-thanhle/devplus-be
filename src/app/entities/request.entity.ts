@@ -6,11 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToOne,
-  JoinColumn,
   OneToMany,
 } from 'typeorm'
-import { User } from './user.entity'
 import { RequestAppove } from './requestApprove.entity'
 
 @Entity({ name: 'requests' })

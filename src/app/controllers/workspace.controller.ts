@@ -13,8 +13,7 @@ export class WorkspaceController {
     return res.status(200).json(result)
   }
   async readLstWorkspace(req: Request, res: Response) {
-    const { sort } = req.query
-    const result = await Workspace.find({})
+    const result = await Workspace.find()
     return res.status(200).json(result)
   }
   async updateWorkspace(req: Request, res: Response) {
