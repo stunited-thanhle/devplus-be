@@ -8,7 +8,6 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm'
-import { User } from './user.entity'
 import { RequestAppove } from './requestApprove.entity'
 
 @Entity({ name: 'requests' })
