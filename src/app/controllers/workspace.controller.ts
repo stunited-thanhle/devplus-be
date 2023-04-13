@@ -2,14 +2,20 @@ import { Workspace } from '@entities/workspace.entity'
 import { Request, Response } from 'express'
 import * as ValidateHelper from '@shared/helper'
 import { StatusCodes } from 'http-status-codes'
+import { ErrorBody } from '@shared/interface/errorInterface'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
     const { body } = req
     const fields = ['name']
     const error = ValidateHelper.validate(fields, body)
-    if (error.length)
-      return res.status(StatusCodes.BAD_REQUEST).json({ msg: error[0] })
+    if (error.length) {
+      const response: ErrorBody = {
+        message: error,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
     const result = await Workspace.create({ name: body.name }).save()
     return res.status(200).json(result)
   }
@@ -26,13 +32,21 @@ export class WorkspaceController {
     const { body } = req
     const fields = ['name']
     const error = ValidateHelper.validate(fields, body)
-    if (error.length)
-      return res.status(StatusCodes.BAD_REQUEST).json({ msg: error[0] })
+    if (error.length) {
+      const response: ErrorBody = {
+        message: error,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
     const target = await Workspace.findOneBy({ id: body.id })
-    if (!target)
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: 'Workspace is not exist' })
+    if (!target) {
+      const response: ErrorBody = {
+        message: 'Workspace is not exist',
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
     target.name = body.name
     await target.save()
     return res.status(200).end()
@@ -40,10 +54,13 @@ export class WorkspaceController {
   async deleteWorkspace(req: Request, res: Response) {
     const { id } = req.params
     const target = await Workspace.findOneBy({ id: parseInt(id) })
-    if (!target)
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: 'Workspace is not exist' })
+    if (!target) {
+      const response: ErrorBody = {
+        message: 'Workspace is not exist',
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
     await Workspace.remove(target)
     return res.status(200).end()
   }
