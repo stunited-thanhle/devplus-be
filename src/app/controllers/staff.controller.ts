@@ -10,9 +10,9 @@ import { Roles } from '@shared/enums'
 
 export class StaffController {
   async createStaffAccount(req: Request, res: Response) {
-    const { username, email, password, gender } = req.body
+    const { username, email, password, gender, slackId } = req.body
 
-    const fields = ['email', 'password', 'username', 'gender']
+    const fields = ['email', 'password', 'username', 'gender', 'slackId']
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -49,6 +49,7 @@ export class StaffController {
       gender,
       password,
       role: staffRole,
+      slackId,
     }).save()
 
     delete data.password
@@ -56,10 +57,10 @@ export class StaffController {
   }
 
   async editStaffAccount(req: Request, res: Response) {
-    const { username, gender } = req.body
+    const { username, gender, slackId } = req.body
     const staffId = parseInt(req.params.id)
 
-    const fields = ['username', 'gender']
+    const fields = ['username', 'gender', 'slackId']
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -88,9 +89,13 @@ export class StaffController {
 
     user.username = username
     user.gender = gender
+    user.slackId = slackId
     await user.save()
 
-    return res.status(StatusCodes.NO_CONTENT).json('')
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+    })
   }
 
   async assignStaffToGroup(req: Request, res: Response) {
@@ -126,7 +131,10 @@ export class StaffController {
     existedGroup.users = [user]
     await existedGroup.save()
 
-    return res.status(StatusCodes.NO_CONTENT).json('')
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+    })
   }
 
   async unAssignStaffToGroup(req: Request, res: Response) {
@@ -166,6 +174,9 @@ export class StaffController {
 
     await existedGroup.save()
 
-    return res.status(StatusCodes.NO_CONTENT).json('')
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+    })
   }
 }
