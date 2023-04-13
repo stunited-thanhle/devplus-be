@@ -7,9 +7,9 @@ import * as ValidateHelper from '@shared/helper'
 
 export class UsersController {
   async create(req: Request, res: Response) {
-    const { email, password, username, role } = req.body
+    const { email, password, username, role, slackId } = req.body
 
-    const fields = ['email', 'password', 'username', 'role']
+    const fields = ['email', 'password', 'username', 'role', 'slackId']
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -24,6 +24,7 @@ export class UsersController {
     const dataToCheck = [
       { model: User, field: 'email', value: email },
       { model: User, field: 'username', value: username },
+      { model: User, field: 'slackId', value: slackId },
     ]
 
     for (const { model, field, value } of dataToCheck) {
@@ -47,6 +48,7 @@ export class UsersController {
       password,
       username,
       role: roleData,
+      slackId: slackId,
     }).save()
 
     return res.status(200).json(data)

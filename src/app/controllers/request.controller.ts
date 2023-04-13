@@ -17,8 +17,8 @@ export class RequestDayOffController {
   }
 
   async createDayOff(req: Request, res: Response) {
-    const { from, to, reason, groupId, userId } = req.body
-    const fields = ['from', 'to', 'reason', 'groupId', 'userId']
+    const { from, to, reason, groupId, userId, typeRequest } = req.body
+    const fields = ['from', 'to', 'reason', 'groupId', 'userId', 'typeRequest']
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -34,6 +34,7 @@ export class RequestDayOffController {
       from,
       to,
       reason,
+      typeRequest,
     }).save()
 
     const user = await User.findOne({
@@ -64,11 +65,13 @@ export class RequestDayOffController {
     return res.status(201).json({ message: 'Successfully' })
   }
 
-  async updateRequestApproval(req: Request, res: Response) {
-    const { from, to, reason } = req.body
+  async updateRequestApproval(req: any, res: Response) {
+    console.log('req user: ', req.user)
+    const { from, to, reason, typeRequest } = req.body
+
     const requestId = parseInt(req.params.id)
 
-    const fields = ['to', 'from', 'reason']
+    const fields = ['to', 'from', 'reason', 'typeRequest']
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -80,15 +83,41 @@ export class RequestDayOffController {
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
 
-    const data = await RequestDayOff.findOneBy({
-      id: requestId,
+    const data = await RequestDayOff.findOne({
+      where: {
+        id: requestId,
+      },
     })
+    if (data === null) {
+      const response: ErrorBody = {
+        message: 'Not found',
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
+
+    const requestApproveEntity = await RequestAppove.findOne({
+      where: { id: requestId },
+      relations: ['user'],
+    })
+
+    // Check the current user is own
+    if (requestApproveEntity.user.id !== req.user.id) {
+      const response: ErrorBody = {
+        message: 'You not have permission',
+        statusCode: StatusCodes.FORBIDDEN,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
 
     data.from = from
     data.reason = reason
     data.to = to
+    data.typeRequest = typeRequest
     await data.save()
 
-    return res.status(StatusCodes.OK).json('Successfully')
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK })
   }
 }

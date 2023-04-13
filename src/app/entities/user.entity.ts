@@ -30,6 +30,9 @@ export class User extends BaseEntity {
   @Column('text')
   password: string
 
+  @Column({ name: 'slackId' })
+  slackId: string
+
   @Column({
     type: 'enum',
     enum: ['0', '1', '2'],
@@ -60,12 +63,13 @@ export class User extends BaseEntity {
     return await bcrypt.compare(attempt, this.password)
   }
   get token() {
-    const { id, username, role } = this
+    const { id, username, role, slackId } = this
     return jwt.sign(
       {
         id,
         username,
         role: role.name,
+        slackId,
       },
       process.env.SECRET,
       { expiresIn: '7d' },

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { RequestDayOffController } from '@controllers/request.controller'
+import { authentication } from '@shared/middleware'
 
 class RequestDayOffRoute {
   public path = '/requests'
@@ -13,12 +14,19 @@ class RequestDayOffRoute {
   }
 
   private initializeRoutes() {
-    this.router.route('/').get(this.requestDayoffController.getRequests)
+    this.router
+      .route('/')
+      .all(authentication)
+      .get(this.requestDayoffController.getRequests)
 
-    this.router.route('/').post(this.requestDayoffController.createDayOff)
+    this.router
+      .route('/')
+      .all(authentication)
+      .post(this.requestDayoffController.createDayOff)
 
     this.router
       .route('/:id')
+      .all(authentication)
       .put(this.requestDayoffController.updateRequestApproval)
   }
 }

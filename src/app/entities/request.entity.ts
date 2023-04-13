@@ -9,7 +9,7 @@ import {
   OneToMany,
 } from 'typeorm'
 import { RequestAppove } from './requestApprove.entity'
-
+import { TypeRequestEnums } from '@shared/enums'
 @Entity({ name: 'requests' })
 export class Request extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -23,6 +23,13 @@ export class Request extends BaseEntity {
 
   @Column({ name: 'reason' })
   reason: string
+
+  @Column({
+    name: 'typeRequest',
+    enum: TypeRequestEnums,
+    default: TypeRequestEnums.DAY_OFF,
+  })
+  typeRequest: TypeRequestEnums
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date
