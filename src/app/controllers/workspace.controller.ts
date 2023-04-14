@@ -17,16 +17,16 @@ export class WorkspaceController {
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
     const result = await Workspace.create({ name: body.name }).save()
-    return res.status(200).json(result)
+    return res.status(StatusCodes.OK).json(result)
   }
   async readWorkspace(req: Request, res: Response) {
     const { id } = req.params
     const result = await Workspace.findOneBy({ id: parseInt(id) })
-    return res.status(200).json(result)
+    return res.status(StatusCodes.OK).json(result)
   }
   async readLstWorkspace(req: Request, res: Response) {
     const result = await Workspace.find()
-    return res.status(200).json(result)
+    return res.status(StatusCodes.OK).json(result)
   }
   async updateWorkspace(req: Request, res: Response) {
     const { body } = req
@@ -49,7 +49,10 @@ export class WorkspaceController {
     }
     target.name = body.name
     await target.save()
-    return res.status(200).end()
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+    })
   }
   async deleteWorkspace(req: Request, res: Response) {
     const { id } = req.params
@@ -62,6 +65,9 @@ export class WorkspaceController {
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
     await Workspace.remove(target)
-    return res.status(200).end()
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+    })
   }
 }
