@@ -55,9 +55,8 @@ export class UsersController {
   }
 
   async getUsers(req: Request, res: Response) {
-    const data = await User.find({})
-    console.log(data)
+    console.log(req.body)
 
-    return res.status(200).json(data)
+    return res.status(200).json('ok')
   }
 }

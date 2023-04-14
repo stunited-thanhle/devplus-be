@@ -7,9 +7,11 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm'
 import { RequestAppove } from './requestApprove.entity'
 import { TypeRequestEnums } from '@shared/enums'
+import { User } from './user.entity'
 @Entity({ name: 'requests' })
 export class Request extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -42,4 +44,7 @@ export class Request extends BaseEntity {
 
   @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.request)
   requestApproves: RequestAppove[]
+
+  @ManyToOne(() => User, (user) => user.requests)
+  user: User
 }

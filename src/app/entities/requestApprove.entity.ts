@@ -29,6 +29,6 @@ export class RequestAppove extends BaseEntity {
   @ManyToOne(() => Request, (request) => request.requestApproves)
   request: Request
 
-  @ManyToOne(() => Group, (request) => request.requestApproves)
-  group: Group
+  // @ManyToOne(() => Group, (request) => request.requestApproves)
+  // group: Group
 }

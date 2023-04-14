@@ -9,11 +9,15 @@ import {
   OneToMany,
   BeforeInsert,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm'
 import { Role } from './role.entity'
 import { RequestAppove } from './requestApprove.entity'
 import * as bcrypt from 'bcryptjs'
 import * as jwt from 'jsonwebtoken'
+import { Request } from './request.entity'
+import { Group } from './group.entity'
 
 export type genderArray = '0' | '1' | '2'
 @Entity({ name: 'users' })
@@ -54,6 +58,17 @@ export class User extends BaseEntity {
 
   @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.user)
   requestApproves: RequestAppove[]
+
+  @OneToMany(() => Request, (request) => request.user)
+  requests: Request[]
+
+  @ManyToMany(() => Group, (group) => group.users)
+  @JoinTable({
+    name: 'group_user',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'group_id', referencedColumnName: 'id' },
+  })
+  groups: Group[]
 
   @BeforeInsert()
   async hasPassword() {

@@ -19,7 +19,7 @@ class UsersRoute {
     this.router
       .route('/')
       // .all(authentication, authorization([Roles.Admin]))
-      .get(this.usersController.getUsers)
+      .post(this.usersController.getUsers)
     // this.router.route('/:id').get()
   }
 }

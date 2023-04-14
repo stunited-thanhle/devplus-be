@@ -16,18 +16,16 @@ class RequestDayOffRoute {
   private initializeRoutes() {
     this.router
       .route('/')
-      .all(authentication)
-      .get(this.requestDayoffController.getRequests)
-
+      // .all(authentication)
+      .get(this.requestDayoffController.findRequest)
     this.router
       .route('/')
-      .all(authentication)
-      .post(this.requestDayoffController.createDayOff)
-
+      // .all(authentication)
+      .post(this.requestDayoffController.createRequest)
     this.router
-      .route('/:id')
-      .all(authentication)
-      .put(this.requestDayoffController.updateRequestApproval)
+      .route('/approve')
+      // .all(authentication)
+      .post(this.requestDayoffController.approveRequest)
   }
 }
 
