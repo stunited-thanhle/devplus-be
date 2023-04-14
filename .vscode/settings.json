@@ -13,11 +13,5 @@
   "yaml.schemas": {
     "https://json.schemastore.org/yamllint.json": "/*"
   },
-  "cSpell.words": [
-    "datasource",
-    "dtos",
-    "middlewares",
-    "prefs",
-    "typeorm"
-  ]
+  "cSpell.words": ["datasource", "dtos", "middlewares", "prefs", "typeorm"]
 }

@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import { WorkspaceController } from '@controllers/workspace.controller'
+import { authentication, authorization } from '@shared/middleware'
+import { Roles } from '@shared/enums'
 
 class WorkspaceRoute {
   public path = '/admin/workspace'
@@ -19,9 +21,11 @@ class WorkspaceRoute {
       .patch(this.workspaceController.updateWorkspace)
       .delete(this.workspaceController.deleteWorkspace)
 
+    this.router.route('/').get(this.workspaceController.readLstWorkspace)
+
     this.router
       .route('/')
-      .get(this.workspaceController.readLstWorkspace)
+      .all(authentication, authorization([Roles.Admin]))
       .post(this.workspaceController.createWorkspace)
   }
 }

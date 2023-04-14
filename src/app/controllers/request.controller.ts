@@ -18,6 +18,7 @@ export class RequestDayOffController {
     })
     return res.status(StatusCodes.OK).json(data)
   }
+<<<<<<< HEAD
 
   async createRequest(req: Request, res: Response) {
     const user = await User.findOne({
@@ -152,4 +153,6 @@ export class RequestDayOffController {
 
     return res.status(200).json({ message: 'Approve successfully' })
   }
+=======
+>>>>>>> 3f12e7e (feat: change role user)
 }
