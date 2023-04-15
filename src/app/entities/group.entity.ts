@@ -13,7 +13,6 @@ import {
 } from 'typeorm'
 import { User } from './user.entity'
 import { Workspace } from './workspace.entity'
-import { RequestAppove } from './requestApprove.entity'
 
 @Entity({ name: 'groups' })
 export class Group extends BaseEntity {
@@ -37,7 +36,4 @@ export class Group extends BaseEntity {
 
   @ManyToOne(() => Workspace, (workspace) => workspace.groups)
   workspace: Workspace
-
-  // @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.group)
-  // requestApproves: RequestAppove[]
 }

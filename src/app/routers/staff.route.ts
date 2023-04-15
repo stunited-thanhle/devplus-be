@@ -23,16 +23,6 @@ class StaffsRoute {
       .route('/:id')
       .all(authentication, authorization([Roles.Manager]))
       .put(this.staffController.editStaffAccount)
-
-    this.router
-      .route('/:id/assign-to-group')
-      .all(authentication, authorization([Roles.Manager]))
-      .post(this.staffController.assignStaffToGroup)
-
-    this.router
-      .route('/:id/unassign-to-group')
-      .all(authentication, authorization([Roles.Manager]))
-      .post(this.staffController.unAssignStaffToGroup)
   }
 }
 

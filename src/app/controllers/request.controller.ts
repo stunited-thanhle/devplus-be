@@ -18,7 +18,6 @@ export class RequestDayOffController {
     })
     return res.status(StatusCodes.OK).json(data)
   }
-<<<<<<< HEAD
 
   async createRequest(req: Request, res: Response) {
     const user = await User.findOne({
@@ -102,14 +101,17 @@ export class RequestDayOffController {
       })
     ).groups.map((item) => item.id)
 
+    // check thang master neu master khong thuoc group cua user gui request thi return 400
     const group = await Group.find({
       where: {
         users: {
-          id: 10,
+          id: 8,
         },
         id: In(groupRequestByUser),
       },
     })
+
+    console.log(group)
 
     if (group.length) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Error' })
@@ -153,6 +155,4 @@ export class RequestDayOffController {
 
     return res.status(200).json({ message: 'Approve successfully' })
   }
-=======
->>>>>>> 3f12e7e (feat: change role user)
 }

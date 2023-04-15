@@ -26,20 +26,9 @@ class RequestDayOffRoute {
       // .all(authentication)
       .post(this.requestDayoffController.createRequest)
     this.router
-<<<<<<< HEAD
       .route('/approve')
       // .all(authentication)
       .post(this.requestDayoffController.approveRequest)
-=======
-      .route('/:id')
-      .all(authentication)
-      .put(this.requestDayoffController.updateRequestApproval)
-
-    this.router
-      .route('/:id/status/approve')
-      .all(authentication, authorization([Roles.Master]))
-      .put(this.managerController.approveRequest)
->>>>>>> 3f12e7e (feat: change role user)
   }
 }
 

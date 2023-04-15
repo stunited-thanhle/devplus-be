@@ -22,11 +22,28 @@ class GroupMemberRoute {
       .post(this.groupMemberController.createGroupMember)
 
     this.router.route('/users').get(this.groupMemberController.listGroupByUser)
+    this.router
+      .route('/assign-to-group')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .post(this.groupMemberController.assignMemberToGroup)
+
+    this.router
+      .route('/unassign-to-group')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .post(this.groupMemberController.unAssignMemberToGroup)
 
     this.router
       .route('/:groupId')
-      .all(authentication, authorization([Roles.Manager]))
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.groupMemberController.groupDetail)
+
+    //@desc Edit the group
+    //@route Put /groups/:groupId
+    //@access private
+    this.router
+      .route('/:groupId')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .put(this.groupMemberController.editGroup)
   }
 }
 
