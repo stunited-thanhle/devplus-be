@@ -1,33 +1,34 @@
 import { Router } from 'express'
 import { RequestDayOffController } from '@controllers/request.controller'
-import { authentication } from '@shared/middleware'
-
+import { authentication, authorization } from '@shared/middleware'
+import { ManagerController } from '@controllers/manager.controller'
+import { Roles } from '@shared/enums'
 class RequestDayOffRoute {
   public path = '/requests'
   public router = Router()
 
   private requestDayoffController: RequestDayOffController
+  private readonly managerController: ManagerController
 
   constructor() {
     this.requestDayoffController = new RequestDayOffController()
+    this.managerController = new ManagerController()
     this.initializeRoutes()
   }
 
   private initializeRoutes() {
     this.router
       .route('/')
-      .all(authentication)
-      .get(this.requestDayoffController.getRequests)
-
+      // .all(authentication)
+      .get(this.requestDayoffController.findRequest)
     this.router
       .route('/')
-      .all(authentication)
-      .post(this.requestDayoffController.createDayOff)
-
+      // .all(authentication)
+      .post(this.requestDayoffController.createRequest)
     this.router
-      .route('/:id')
-      .all(authentication)
-      .put(this.requestDayoffController.updateRequestApproval)
+      .route('/approve')
+      // .all(authentication)
+      .post(this.requestDayoffController.approveRequest)
   }
 }
 

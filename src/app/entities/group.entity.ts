@@ -13,7 +13,6 @@ import {
 } from 'typeorm'
 import { User } from './user.entity'
 import { Workspace } from './workspace.entity'
-import { RequestAppove } from './requestApprove.entity'
 
 @Entity({ name: 'groups' })
 export class Group extends BaseEntity {
@@ -32,13 +31,9 @@ export class Group extends BaseEntity {
   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date
 
-  @ManyToMany(() => User)
-  @JoinTable()
+  @ManyToMany(() => User, (user) => user.groups)
   users: User[]
 
   @ManyToOne(() => Workspace, (workspace) => workspace.groups)
   workspace: Workspace
-
-  @OneToMany(() => RequestAppove, (requestApprove) => requestApprove.group)
-  requestApproves: RequestAppove[]
 }
