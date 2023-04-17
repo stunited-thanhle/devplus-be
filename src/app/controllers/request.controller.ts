@@ -6,11 +6,13 @@ import { User } from '@entities/user.entity'
 
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { Roles, StatusApproval } from '@shared/enums'
+import { Roles, StatusApproval, TypeRequestEnums } from '@shared/enums'
 import { In } from 'typeorm'
 import http from 'https'
 import { slackNoti, slackNotiDayoff } from '@shared/templates/slackNotification'
 import { DayOff } from '@entities/dayoff.entity'
+import * as ValidateHelper from '@shared/helper'
+import { ErrorBody } from '@shared/interface/errorInterface'
 
 const sendMessageToDayoff = (
   options: any,
@@ -50,7 +52,39 @@ export class RequestDayOffController {
 
   async createRequest(req: Request, res: Response) {
     try {
-      const { userRequestId, from, to, reason, typeRequest } = req.body
+      const {
+        userRequestId,
+        from,
+        to,
+        reason,
+        typeRequest,
+        quantity,
+      }: {
+        userRequestId: number
+        from: Date
+        to: Date
+        reason: string
+        typeRequest: TypeRequestEnums
+        quantity: number
+      } = req.body
+
+      const fields = [
+        'userRequestId',
+        'from',
+        'to',
+        'reason',
+        'typeRequest',
+        'quantity',
+      ]
+      const error = ValidateHelper.validate(fields, req.body)
+
+      if (error.length) {
+        const response: ErrorBody = {
+          message: error,
+          statusCode: StatusCodes.BAD_REQUEST,
+        }
+        return res.status(StatusCodes.BAD_REQUEST).json(response)
+      }
 
       const user = await User.findOne({
         where: {
@@ -70,6 +104,7 @@ export class RequestDayOffController {
         reason,
         typeRequest,
         user: user,
+        quantity,
       }).save()
 
       await DayOff.create({
@@ -83,6 +118,7 @@ export class RequestDayOffController {
           To: to,
           Type: typeRequest,
           Reason: reason,
+          quantity,
         },
       }).save()
 
@@ -236,6 +272,7 @@ export class RequestDayOffController {
       })
     ).map((item) => item.id)
 
+    // find va count so luong status cua request id
     const aa = await RequestAppove.findAndCount({
       where: {
         request: {

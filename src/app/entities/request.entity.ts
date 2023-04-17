@@ -27,6 +27,9 @@ export class Request extends BaseEntity {
   @Column({ name: 'reason' })
   reason: string
 
+  @Column({ name: 'quantity', type: 'float' })
+  quantity: number
+
   @Column({
     name: 'typeRequest',
     enum: TypeRequestEnums,

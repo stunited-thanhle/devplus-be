@@ -17,6 +17,7 @@ class WorkspaceRoute {
   private initializeRoutes() {
     this.router
       .route('/:id')
+      .all(authentication, authorization([Roles.Admin]))
       .get(this.workspaceController.readWorkspace)
       .patch(this.workspaceController.updateWorkspace)
       .delete(this.workspaceController.deleteWorkspace)

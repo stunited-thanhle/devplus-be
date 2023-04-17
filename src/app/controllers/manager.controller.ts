@@ -6,7 +6,6 @@ import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { Not } from 'typeorm'
 import * as ValidateHelper from '@shared/helper'
-import https from 'https'
 
 export class ManagerController {
   async updateRole(req: Request, res: Response) {

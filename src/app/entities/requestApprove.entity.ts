@@ -7,7 +7,6 @@ import {
 } from 'typeorm'
 import { User } from './user.entity'
 import { Request } from './request.entity'
-import { Group } from './group.entity'
 import { StatusApproval } from '@shared/enums'
 
 @Entity({ name: 'request_approves' })
@@ -28,7 +27,4 @@ export class RequestAppove extends BaseEntity {
 
   @ManyToOne(() => Request, (request) => request.requestApproves)
   request: Request
-
-  // @ManyToOne(() => Group, (request) => request.requestApproves)
-  // group: Group
 }

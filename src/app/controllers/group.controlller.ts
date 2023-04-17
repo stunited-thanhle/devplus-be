@@ -5,6 +5,7 @@ import { ErrorBody } from '@shared/interface/errorInterface'
 import { Group } from '@entities/group.entity'
 import { Workspace } from '@entities/workspace.entity'
 import { User } from '@entities/user.entity'
+import { workspaceStatus } from '@shared/enums'
 
 export class GroupMemberController {
   async listGroups(req: Request, res: Response) {
@@ -60,6 +61,7 @@ export class GroupMemberController {
 
     for (const { model, field, value } of dataToCheck) {
       const exists = await ValidateHelper.checkExistence(model, field, value)
+
       if (exists) {
         return res.status(StatusCodes.BAD_REQUEST).json({
           message: `${field} already exists`,
@@ -74,7 +76,7 @@ export class GroupMemberController {
       },
     })
 
-    if (workspace === null) {
+    if (workspace === null || workspace.status === workspaceStatus.INACTIVE) {
       const response: ErrorBody = {
         message: 'Workspace not found',
         statusCode: StatusCodes.NOT_FOUND,

@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import * as ValidateHelper from '@shared/helper'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorBody } from '@shared/interface/errorInterface'
+import { workspaceStatus } from '@shared/enums'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
@@ -24,14 +25,19 @@ export class WorkspaceController {
     const result = await Workspace.findOneBy({ id: parseInt(id) })
     return res.status(StatusCodes.OK).json(result)
   }
+
   async readLstWorkspace(req: Request, res: Response) {
     const result = await Workspace.find()
     return res.status(StatusCodes.OK).json(result)
   }
   async updateWorkspace(req: Request, res: Response) {
-    const { body } = req
-    const fields = ['name']
-    const error = ValidateHelper.validate(fields, body)
+    const { name, status }: { name: string; status: workspaceStatus } = req.body
+
+    const fields = ['name', 'status']
+    const workSpaceId = parseInt(req.params.id)
+
+    const error = ValidateHelper.validate(fields, req.body)
+
     if (error.length) {
       const response: ErrorBody = {
         message: error,
@@ -39,7 +45,8 @@ export class WorkspaceController {
       }
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
-    const target = await Workspace.findOneBy({ id: body.id })
+    const target = await Workspace.findOneBy({ id: workSpaceId })
+
     if (!target) {
       const response: ErrorBody = {
         message: 'Workspace is not exist',
@@ -47,8 +54,11 @@ export class WorkspaceController {
       }
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
-    target.name = body.name
+
+    target.name = name
+    target.status = status
     await target.save()
+
     return res.status(StatusCodes.OK).json({
       message: 'Successfully',
       statusCode: StatusCodes.OK,
