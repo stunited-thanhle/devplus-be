@@ -12,6 +12,7 @@ import {
 } from 'typeorm'
 import { User } from './user.entity'
 import { Group } from './group.entity'
+import { workspaceStatus } from '@shared/enums'
 
 @Entity({ name: 'workspaces' })
 export class Workspace extends BaseEntity {
@@ -20,6 +21,9 @@ export class Workspace extends BaseEntity {
 
   @Column({ name: 'name' })
   name: string
+
+  @Column({ name: 'status', default: workspaceStatus.ACTIVE })
+  status: workspaceStatus
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date
