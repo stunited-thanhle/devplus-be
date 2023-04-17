@@ -22,7 +22,12 @@ export class Workspace extends BaseEntity {
   @Column({ name: 'name' })
   name: string
 
-  @Column({ name: 'status', default: workspaceStatus.ACTIVE })
+
+  @Column({
+    name: 'status',
+    enum: workspaceStatus,
+    default: workspaceStatus.ACTIVE,
+  })
   status: workspaceStatus
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
