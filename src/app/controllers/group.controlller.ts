@@ -78,7 +78,7 @@ export class GroupMemberController {
 
     if (workspace === null || workspace.status === workspaceStatus.INACTIVE) {
       const response: ErrorBody = {
-        message: 'Workspace not found',
+        message: 'Workspace not found or inactive',
         statusCode: StatusCodes.NOT_FOUND,
       }
       return res.status(StatusCodes.NOT_FOUND).json(response)
