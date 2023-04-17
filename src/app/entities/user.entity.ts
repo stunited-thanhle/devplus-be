@@ -18,8 +18,8 @@ import * as bcrypt from 'bcryptjs'
 import * as jwt from 'jsonwebtoken'
 import { Request } from './request.entity'
 import { Group } from './group.entity'
+import { GenderEnums } from '@shared/enums'
 
-export type genderArray = '0' | '1' | '2'
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -38,11 +38,12 @@ export class User extends BaseEntity {
   slackId: string
 
   @Column({
+    name: 'gender',
     type: 'enum',
-    enum: ['0', '1', '2'],
-    default: '2',
+    enum: GenderEnums,
+    nullable: true,
   })
-  gender: genderArray
+  gender: GenderEnums
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date
