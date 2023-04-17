@@ -218,4 +218,25 @@ export class GroupMemberController {
       .status(StatusCodes.OK)
       .json({ message: 'Successfully', statusCode: StatusCodes.OK })
   }
+
+  async deleteGruop(req: Request, res: Response) {
+    const groupId: number = parseInt(req.params.groupId)
+
+    const existedGroup = await Group.findOne({
+      where: {
+        id: groupId,
+      },
+      relations: ['users'],
+    })
+
+    existedGroup.users = []
+    await existedGroup.remove()
+    await existedGroup.save()
+
+    console.log(existedGroup.users)
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK })
+  }
 }

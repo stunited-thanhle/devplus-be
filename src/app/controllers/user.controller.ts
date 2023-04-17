@@ -4,8 +4,7 @@ import { ErrorBody } from '@shared/interface/errorInterface'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import * as ValidateHelper from '@shared/helper'
-import { RequestAppove } from '@entities/requestApprove.entity'
-import { Request as RequestDayOff } from '@entities/request.entity'
+import { RequestDayOffController } from './request.controller'
 
 export class UsersController {
   async create(req: Request, res: Response) {
@@ -58,28 +57,10 @@ export class UsersController {
 
   async getUsers(req: Request, res: Response) {
     console.log(req.body)
+    const requestController = new RequestDayOffController()
 
-    return res.status(200).json('ok')
-  }
+    await requestController.approveRequest(req, res)
 
-  async getUserRequests(req: Request, res: Response) {
-    const userId = parseInt(req.params.userId)
-
-    const currentUser = await User.findOne({
-      where: {
-        id: userId,
-      },
-    })
-
-    const listRequests = await RequestAppove.find({
-      relations: ['request'],
-      where: {
-        user: {
-          id: 3,
-        },
-      },
-      select: { id: true, status: true },
-    })
-    return res.status(StatusCodes.OK).json(listRequests)
+    return 1
   }
 }

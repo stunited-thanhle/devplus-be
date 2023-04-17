@@ -12,6 +12,7 @@ import {
 import { RequestAppove } from './requestApprove.entity'
 import { TypeRequestEnums } from '@shared/enums'
 import { User } from './user.entity'
+import { DayOff } from './dayoff.entity'
 @Entity({ name: 'requests' })
 export class Request extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -47,4 +48,7 @@ export class Request extends BaseEntity {
 
   @ManyToOne(() => User, (user) => user.requests)
   user: User
+
+  @OneToMany(() => DayOff, (dayoff) => dayoff.request)
+  dayoffs: DayOff[]
 }
