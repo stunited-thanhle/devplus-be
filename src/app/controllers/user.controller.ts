@@ -8,9 +8,16 @@ import { RequestDayOffController } from './request.controller'
 
 export class UsersController {
   async create(req: Request, res: Response) {
-    const { email, password, username, role, slackId } = req.body
+    const { email, password, username, role, gender, slackId } = req.body
 
-    const fields = ['email', 'password', 'username', 'role', 'slackId']
+    const fields = [
+      'email',
+      'password',
+      'username',
+      'role',
+      'slackId',
+      'gender',
+    ]
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -50,6 +57,7 @@ export class UsersController {
       username,
       role: roleData,
       slackId: slackId,
+      gender,
     }).save()
 
     return res.status(200).json(data)

@@ -22,7 +22,6 @@ export class Workspace extends BaseEntity {
   @Column({ name: 'name' })
   name: string
 
-
   @Column({
     name: 'status',
     enum: workspaceStatus,

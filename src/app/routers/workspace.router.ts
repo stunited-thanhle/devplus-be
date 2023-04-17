@@ -16,18 +16,21 @@ class WorkspaceRoute {
 
   private initializeRoutes() {
     this.router
-      .route('/:id')
-      .all(authentication, authorization([Roles.Admin]))
-      .get(this.workspaceController.readWorkspace)
-      .patch(this.workspaceController.updateWorkspace)
-      .delete(this.workspaceController.deleteWorkspace)
-
-    this.router.route('/').get(this.workspaceController.readLstWorkspace)
+      .route('/')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .get(this.workspaceController.readLstWorkspace)
 
     this.router
       .route('/')
       .all(authentication, authorization([Roles.Admin]))
       .post(this.workspaceController.createWorkspace)
+
+    this.router
+      .route('/:id')
+      .all(authentication, authorization([Roles.Admin]))
+      .get(this.workspaceController.readWorkspace)
+      .patch(this.workspaceController.updateWorkspace)
+      .delete(this.workspaceController.deleteWorkspace)
   }
 }
 

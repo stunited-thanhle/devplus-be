@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import * as ValidateHelper from '@shared/helper'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorBody } from '@shared/interface/errorInterface'
-import { workspaceStatus } from '@shared/enums'
+import { Roles, workspaceStatus } from '@shared/enums'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
@@ -21,13 +21,41 @@ export class WorkspaceController {
     return res.status(StatusCodes.OK).json(result)
   }
   async readWorkspace(req: Request, res: Response) {
-    const { id } = req.params
-    const result = await Workspace.findOneBy({ id: parseInt(id) })
+    const workspaceId = parseInt(req.params.id)
+
+    const result = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+        users: {
+          role: {
+            name: Roles.Manager,
+          },
+        },
+      },
+      relations: ['users'],
+    })
+
+    if (result === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not Found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
     return res.status(StatusCodes.OK).json(result)
   }
 
   async readLstWorkspace(req: Request, res: Response) {
-    const result = await Workspace.find()
+    const result = await Workspace.find({
+      relations: ['users'],
+      where: {
+        users: {
+          role: {
+            name: Roles.Manager,
+          },
+        },
+      },
+    })
+
     return res.status(StatusCodes.OK).json(result)
   }
   async updateWorkspace(req: Request, res: Response) {
