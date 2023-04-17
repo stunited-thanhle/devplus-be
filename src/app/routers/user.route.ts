@@ -32,10 +32,10 @@ class UsersRoute {
       .all(authentication, authorization([Roles.Manager]))
       .put(this.managerController.updateRole)
 
-    this.router
-      .route('/:userId/requests')
-      .all(authentication)
-      .get(this.usersController.getUserRequests)
+    // this.router
+    //   .route('/:userId/requests')
+    //   .all(authentication)
+    //   .get(this.usersController.getUserRequests)
   }
 }
 

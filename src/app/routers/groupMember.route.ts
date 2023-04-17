@@ -44,6 +44,7 @@ class GroupMemberRoute {
       .route('/:groupId')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .put(this.groupMemberController.editGroup)
+      .delete(this.groupMemberController.deleteGruop)
   }
 }
 
