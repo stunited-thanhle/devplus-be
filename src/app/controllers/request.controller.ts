@@ -53,6 +53,19 @@ export class RequestDayOffController {
       },
     })
 
+    if (currentUser.role.name === Roles.Staff) {
+      // lay toan bo group cua master
+      const requests = await RequestEntity.find({
+        where: {
+          user: {
+            id: currentUserId,
+          },
+        },
+      })
+
+      return res.status(StatusCodes.OK).json(requests)
+    }
+
     if (currentUser.role.name === Roles.Master) {
       // lay toan bo group cua master
       const groupRequestByUser = (
@@ -63,8 +76,6 @@ export class RequestDayOffController {
           relations: ['groups'],
         })
       ).groups.map((item) => item.id)
-
-      console.log('demoL: ok', groupRequestByUser)
 
       // get all the user in all gruops of master
       const usersInGroups = await User.find({
@@ -236,6 +247,7 @@ export class RequestDayOffController {
     const payload = req.body.payload ? JSON.parse(req.body.payload) : null
 
     const { requestId, statusApprove, slackId } = req.body
+    console.log(req.body)
 
     const request = await RequestEntity.findOne({
       where: {
@@ -272,7 +284,7 @@ export class RequestDayOffController {
     })
 
     if (!group.length) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Error' })
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'q' })
     }
 
     if (new Date(request.from) > new Date()) {
