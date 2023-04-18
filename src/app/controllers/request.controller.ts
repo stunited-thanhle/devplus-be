@@ -451,7 +451,6 @@ export class RequestDayOffController {
       data.quantity = quantity
       data.typeRequest = typeRequest
       await data.save()
-      console.log(data)
 
       // insert new dayoff history
       await DayOff.create({
