@@ -29,6 +29,11 @@ class RequestDayOffRoute {
       .route('/approve')
       // .all(authentication)
       .post(this.requestDayoffController.approveRequest)
+
+    this.router
+      .route('/:requestId')
+      .all(authentication)
+      .patch(this.requestDayoffController.editRequest)
   }
 }
 
