@@ -13,6 +13,7 @@ import { slackNoti, slackNotiDayoff } from '@shared/templates/slackNotification'
 import { DayOff } from '@entities/dayoff.entity'
 import * as ValidateHelper from '@shared/helper'
 import { ErrorBody } from '@shared/interface/errorInterface'
+import dataSourceConfig from '@shared/config/data-source.config'
 
 const sendMessageToDayoff = (
   options: any,
@@ -24,7 +25,7 @@ const sendMessageToDayoff = (
     request.typeRequest,
     request.from,
     request.to,
-    1,
+    request.quantity,
     request.reason,
   )
   const rq = http.request(options, (res) => {
@@ -38,7 +39,6 @@ const sendMessageToDayoff = (
 
   rq.write(postData)
   rq.end()
-  console.log('123')
 
   return true
 }
@@ -396,7 +396,7 @@ export class RequestDayOffController {
       }
 
       const data = await RequestEntity.findOne({
-        relations: ['user'],
+        relations: ['user', 'requestApproves'],
         where: {
           id: requestId,
           user: {
@@ -423,6 +423,15 @@ export class RequestDayOffController {
           .json({ message: 'Request not found' })
       }
 
+      const a = await dataSourceConfig
+        .getRepository(RequestAppove)
+        .createQueryBuilder('requestApprove')
+        .delete()
+        .from(RequestAppove)
+        .andWhere('request.id = :id', { id: 1 })
+        .execute()
+
+      console.log(a, '123')
       // update the current request
       data.from = from
       data.to = to
@@ -500,6 +509,7 @@ export class RequestDayOffController {
 
       return res.status(200).json({ data, message: 'ok' })
     } catch (error) {
+      console.log(error)
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ message: 'Internal Server Error' })
