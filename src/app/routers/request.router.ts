@@ -19,20 +19,36 @@ class RequestDayOffRoute {
   private initializeRoutes() {
     this.router
       .route('/')
-      // .all(authentication)
-      .get(this.requestDayoffController.findRequest)
+      .all(authentication)
+      .post(this.requestDayoffController.createRequest)
+
     this.router
       .route('/')
-      // .all(authentication)
-      .post(this.requestDayoffController.createRequest)
-    this.router
-      .route('/approve')
-      // .all(authentication)
-      .post(this.requestDayoffController.approveRequest)
+      .all(
+        authentication,
+        authorization([Roles.Admin, Roles.Manager, Roles.Master]),
+      )
+      .get(this.requestDayoffController.getRequests)
 
     this.router
       .route('/:requestId')
       .all(authentication)
+      .get(this.requestDayoffController.findRequest)
+
+    this.router
+      .route('/approve')
+      .all(
+        authentication,
+        authorization([Roles.Admin, Roles.Manager, Roles.Master]),
+      )
+      .post(this.requestDayoffController.approveRequest)
+
+    this.router
+      .route('/:requestId')
+      .all(
+        authentication,
+        authorization([Roles.Admin, Roles.Manager, Roles.Master]),
+      )
       .patch(this.requestDayoffController.editRequest)
   }
 }

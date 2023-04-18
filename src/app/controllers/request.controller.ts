@@ -43,30 +43,62 @@ const sendMessageToDayoff = (
   return true
 }
 export class RequestDayOffController {
-  async getRequests(req: Request, res: Response) {
-    const data = await RequestEntity.find({
-      relations: ['requestApproves'],
+  async getRequests(req: any, res: Response) {
+    const currentUserId = req.user.id
+
+    const currentUser = await User.findOne({
+      relations: ['role'],
+      where: {
+        id: currentUserId,
+      },
     })
-    return res.status(StatusCodes.OK).json(data)
+
+    if (currentUser.role.name === Roles.Master) {
+      // lay toan bo group cua master
+      const groupRequestByUser = (
+        await User.findOne({
+          where: {
+            id: currentUserId,
+          },
+          relations: ['groups'],
+        })
+      ).groups.map((item) => item.id)
+
+      console.log('demoL: ok', groupRequestByUser)
+
+      // get all the user in all gruops of master
+      const usersInGroups = await User.find({
+        relations: ['groups'],
+        where: {
+          groups: {
+            id: In(groupRequestByUser),
+          },
+        },
+      })
+
+      const requests = await RequestEntity.find({
+        relations: ['user', 'requestApproves'],
+        where: {
+          user: {
+            id: In(usersInGroups),
+          },
+        },
+      })
+
+      return res.status(StatusCodes.OK).json(requests)
+    }
+
+    const requests = await RequestEntity.find({
+      relations: ['user', 'requestApproves'],
+    })
+
+    return res.status(StatusCodes.OK).json(requests)
   }
 
   async createRequest(req: Request, res: Response) {
     try {
-      const {
-        userRequestId,
-        from,
-        to,
-        reason,
-        typeRequest,
-        quantity,
-      }: {
-        userRequestId: number
-        from: Date
-        to: Date
-        reason: string
-        typeRequest: TypeRequestEnums
-        quantity: number
-      } = req.body
+      const { userRequestId, from, to, reason, typeRequest, quantity } =
+        req.body
 
       const fields = [
         'userRequestId',
@@ -182,14 +214,22 @@ export class RequestDayOffController {
   }
 
   async findRequest(req: Request, res: Response) {
-    const rq = await RequestEntity.findOne({
+    const requestId = parseInt(req.params.requestId)
+
+    const request = await RequestEntity.findOne({
       where: {
-        id: 1,
+        id: requestId,
       },
-      relations: ['user.groups'],
+      relations: ['dayoffs'],
     })
 
-    return res.status(200).json({ rq, message: 'ok' })
+    if (request === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    return res.status(StatusCodes.OK).json(request)
   }
 
   async approveRequest(req: Request, res: Response) {
