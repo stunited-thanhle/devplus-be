@@ -14,11 +14,13 @@ import { DayOff } from '@entities/dayoff.entity'
 import * as ValidateHelper from '@shared/helper'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import dataSourceConfig from '@shared/config/data-source.config'
+import { TITLE_SLACK_NOTIFY } from '@shared/constant'
 
 const sendMessageToDayoff = (
   options: any,
   request: RequestEntity,
   user: User,
+  title: string,
 ) => {
   const postData = slackNotiDayoff(
     user.username,
@@ -27,6 +29,7 @@ const sendMessageToDayoff = (
     request.to,
     request.quantity,
     request.reason,
+    title,
   )
   const rq = http.request(options, (res) => {
     res.on('data', (data) => {
@@ -199,7 +202,9 @@ export class RequestDayOffController {
         },
       }
 
-      sendMessageToDayoff(options, data, user)
+      sendMessageToDayoff(options, data, user, TITLE_SLACK_NOTIFY.NEW_MESSAGE)
+
+      // console.log(masters)
 
       masters.forEach((item) => {
         const postData = slackNoti(item, data)
@@ -282,8 +287,6 @@ export class RequestDayOffController {
       },
     })
 
-    console.log('group: ', group)
-
     if (!group.length) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'q' })
     }
@@ -300,13 +303,20 @@ export class RequestDayOffController {
       user: user,
     }).save()
 
+    //Find user approve
+    const userApproveBySlack = await User.findOne({
+      where: {
+        slackId: slackId || payload?.user.id,
+      },
+    })
+
     //Create history
     await DayOff.create({
       action: statusApprove || payload.actions[0].value,
       name: user?.username,
       request,
       detail: {
-        name: user?.username,
+        name: userApproveBySlack?.username,
         value: statusApprove || payload.actions[0].value,
       },
     }).save()
@@ -348,8 +358,9 @@ export class RequestDayOffController {
         },
       }).save()
     }
-
+    console.log(payload)
     if (payload) {
+      console.log(123)
       return res.status(200).json('Approve successfully')
     } else {
       return res.status(200).json({ message: 'Approve successfully' })
@@ -423,7 +434,7 @@ export class RequestDayOffController {
           .json({ message: 'Request not found' })
       }
 
-      const a = await dataSourceConfig
+      await dataSourceConfig
         .getRepository(RequestAppove)
         .createQueryBuilder('requestApprove')
         .delete()
@@ -431,7 +442,6 @@ export class RequestDayOffController {
         .andWhere('request.id = :id', { id: 1 })
         .execute()
 
-      console.log(a, '123')
       // update the current request
       data.from = from
       data.to = to
@@ -490,7 +500,12 @@ export class RequestDayOffController {
         },
       }
 
-      sendMessageToDayoff(options, data, user)
+      sendMessageToDayoff(
+        options,
+        data,
+        user,
+        TITLE_SLACK_NOTIFY.REQUEST_CHANGE,
+      )
 
       masters.forEach((item) => {
         const postData = slackNoti(item, data)

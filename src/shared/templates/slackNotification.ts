@@ -40,6 +40,7 @@ export const slackNotiDayoff = (
   to: Date,
   quantity: number,
   reason: string,
+  title: string,
 ) => {
   const data = {
     channel: 'C05308YPC02',
@@ -52,7 +53,7 @@ export const slackNotiDayoff = (
             type: 'header',
             text: {
               type: 'plain_text',
-              text: 'New request',
+              text: title,
               emoji: true,
             },
           },
