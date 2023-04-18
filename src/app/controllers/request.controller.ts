@@ -288,7 +288,9 @@ export class RequestDayOffController {
     })
 
     if (!group.length) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'q' })
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: 'Bad request', statusCode: StatusCodes.BAD_REQUEST })
     }
 
     if (new Date(request.from) > new Date()) {
@@ -439,7 +441,7 @@ export class RequestDayOffController {
         .createQueryBuilder('requestApprove')
         .delete()
         .from(RequestAppove)
-        .andWhere('request.id = :id', { id: 1 })
+        .andWhere('request.id = :id', { id: requestId })
         .execute()
 
       // update the current request

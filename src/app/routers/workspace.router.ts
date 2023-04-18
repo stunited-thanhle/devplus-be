@@ -31,6 +31,16 @@ class WorkspaceRoute {
       .get(this.workspaceController.readWorkspace)
       .patch(this.workspaceController.updateWorkspace)
       .delete(this.workspaceController.deleteWorkspace)
+
+    this.router
+      .route('/:workspaceId/assign-user')
+      .all(authentication, authorization([Roles.Admin]))
+      .post(this.workspaceController.assignUserToWorkSpace)
+
+    this.router
+      .route('/:workspaceId/unassign-user')
+      .all(authentication, authorization([Roles.Admin]))
+      .post(this.workspaceController.unAssignUserFromWorkSpace)
   }
 }
 
