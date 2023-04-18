@@ -65,9 +65,9 @@ export class UsersController {
 
   async getUsers(req: Request, res: Response) {
     console.log(req.body)
-    const requestController = new RequestDayOffController()
+    // const requestController = new RequestDayOffController()
 
-    await requestController.approveRequest(req, res)
+    // await requestController.approveRequest(req, res)
 
     return 1
   }

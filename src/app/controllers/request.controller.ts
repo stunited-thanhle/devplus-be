@@ -14,11 +14,13 @@ import { DayOff } from '@entities/dayoff.entity'
 import * as ValidateHelper from '@shared/helper'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import dataSourceConfig from '@shared/config/data-source.config'
+import { TITLE_SLACK_NOTIFY } from '@shared/constant'
 
 const sendMessageToDayoff = (
   options: any,
   request: RequestEntity,
   user: User,
+  title: string,
 ) => {
   const postData = slackNotiDayoff(
     user.username,
@@ -27,6 +29,7 @@ const sendMessageToDayoff = (
     request.to,
     request.quantity,
     request.reason,
+    title,
   )
   const rq = http.request(options, (res) => {
     res.on('data', (data) => {
@@ -199,7 +202,9 @@ export class RequestDayOffController {
         },
       }
 
-      sendMessageToDayoff(options, data, user)
+      sendMessageToDayoff(options, data, user, TITLE_SLACK_NOTIFY.NEW_MESSAGE)
+
+      // console.log(masters)
 
       masters.forEach((item) => {
         const postData = slackNoti(item, data)
@@ -423,7 +428,7 @@ export class RequestDayOffController {
           .json({ message: 'Request not found' })
       }
 
-      const a = await dataSourceConfig
+      await dataSourceConfig
         .getRepository(RequestAppove)
         .createQueryBuilder('requestApprove')
         .delete()
@@ -431,7 +436,6 @@ export class RequestDayOffController {
         .andWhere('request.id = :id', { id: 1 })
         .execute()
 
-      console.log(a, '123')
       // update the current request
       data.from = from
       data.to = to
@@ -439,6 +443,7 @@ export class RequestDayOffController {
       data.quantity = quantity
       data.typeRequest = typeRequest
       await data.save()
+      console.log(data)
 
       // insert new dayoff history
       await DayOff.create({
@@ -490,7 +495,12 @@ export class RequestDayOffController {
         },
       }
 
-      sendMessageToDayoff(options, data, user)
+      sendMessageToDayoff(
+        options,
+        data,
+        user,
+        TITLE_SLACK_NOTIFY.REQUEST_CHANGE,
+      )
 
       masters.forEach((item) => {
         const postData = slackNoti(item, data)
