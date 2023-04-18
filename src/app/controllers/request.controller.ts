@@ -247,7 +247,6 @@ export class RequestDayOffController {
     const payload = req.body.payload ? JSON.parse(req.body.payload) : null
 
     const { requestId, statusApprove, slackId } = req.body
-    console.log(req.body)
 
     const request = await RequestEntity.findOne({
       where: {
@@ -282,6 +281,8 @@ export class RequestDayOffController {
         id: In(groupRequestByUser),
       },
     })
+
+    console.log('group: ', group)
 
     if (!group.length) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'q' })

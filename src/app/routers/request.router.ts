@@ -37,6 +37,7 @@ class RequestDayOffRoute {
 
     this.router
       .route('/approve')
+      .all(authentication)
       .post(this.requestDayoffController.approveRequest)
 
     this.router
