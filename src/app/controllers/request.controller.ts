@@ -302,4 +302,154 @@ export class RequestDayOffController {
       return res.status(200).json({ message: 'Approve successfully' })
     }
   }
+
+  async editRequest(req: Request, res: Response) {
+    try {
+      const requestId = parseInt(req.params.requestId)
+
+      const {
+        userRequestId,
+        from,
+        to,
+        reason,
+        typeRequest,
+        quantity,
+      }: {
+        requestId: number
+        userRequestId: number
+        from: Date
+        to: Date
+        reason: string
+        typeRequest: TypeRequestEnums
+        quantity: number
+      } = req.body
+
+      const fields = [
+        'userRequestId',
+        'from',
+        'to',
+        'reason',
+        'typeRequest',
+        'quantity',
+      ]
+      const error = ValidateHelper.validate(fields, req.body)
+
+      if (error.length) {
+        const response: ErrorBody = {
+          message: error,
+          statusCode: StatusCodes.BAD_REQUEST,
+        }
+        return res.status(StatusCodes.BAD_REQUEST).json(response)
+      }
+
+      const data = await RequestEntity.findOne({
+        relations: ['user'],
+        where: {
+          id: requestId,
+          user: {
+            id: userRequestId,
+          },
+        },
+      })
+
+      const user = await User.findOne({
+        where: {
+          id: userRequestId,
+        },
+      })
+
+      if (!user) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .json({ message: 'User not found' })
+      }
+
+      if (!data) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .json({ message: 'Request not found' })
+      }
+
+      // update the current request
+      data.from = from
+      data.to = to
+      data.user = user
+      data.quantity = quantity
+      data.typeRequest = typeRequest
+      await data.save()
+
+      // insert new dayoff history
+      await DayOff.create({
+        action: 'Request',
+        name: user.username,
+        request: data,
+        detail: {
+          name: user.username,
+          value: 'requested',
+          From: from,
+          To: to,
+          Type: typeRequest,
+          Reason: reason,
+          quantity,
+        },
+      }).save()
+
+      const groupRequestByUser = (
+        await User.findOne({
+          where: {
+            id: userRequestId,
+          },
+          relations: ['groups'],
+        })
+      ).groups.map((item) => item.id)
+
+      const masters = (
+        await User.find({
+          where: {
+            groups: {
+              id: In(groupRequestByUser),
+            },
+            role: {
+              name: Roles.Master,
+            },
+          },
+        })
+      ).map((item) => item)
+
+      const options = {
+        hostname: 'slack.com',
+        port: 443,
+        path: '/api/chat.postMessage',
+        method: 'POST',
+        headers: {
+          Accept: '*',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.SLACK_TOKEN}`,
+        },
+      }
+
+      sendMessageToDayoff(options, data, user)
+
+      masters.forEach((item) => {
+        const postData = slackNoti(item, data)
+        const rq = http.request(options, (res) => {
+          res.on('data', (data) => {
+            console.log(data.toString())
+          })
+        })
+        req.on('error', (error) => {
+          console.error(error)
+        })
+
+        rq.write(postData)
+        rq.end()
+      })
+
+      return res.status(200).json({ data, message: 'ok' })
+    } catch (error) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: 'Internal Server Error' })
+    }
+  }
 }
