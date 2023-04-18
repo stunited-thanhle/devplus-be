@@ -4,6 +4,7 @@ import * as ValidateHelper from '@shared/helper'
 import { StatusCodes } from 'http-status-codes'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import { Roles, workspaceStatus } from '@shared/enums'
+import { User } from '@entities/user.entity'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
@@ -107,5 +108,79 @@ export class WorkspaceController {
       message: 'Successfully',
       statusCode: StatusCodes.OK,
     })
+  }
+
+  async assignUserToWorkSpace(req: Request, res: Response) {
+    const { userId }: { userId: number } = req.body
+    const workspaceId = parseInt(req.params.workspaceId)
+
+    const user = await User.findOne({
+      where: {
+        id: userId,
+      },
+    })
+
+    const existedWorkspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+      relations: ['users'],
+    })
+
+    // return 404 if workspace not found
+    if (existedWorkspace === null || user === null) {
+      const response: ErrorBody = {
+        message: 'Not found',
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+
+      return res.status(StatusCodes.NOT_FOUND).json(response)
+    }
+
+    existedWorkspace.users = [...existedWorkspace.users, user]
+    await existedWorkspace.save()
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK })
+  }
+
+  async unAssignUserFromWorkSpace(req: Request, res: Response) {
+    const { userId }: { userId: number } = req.body
+    const workspaceId = parseInt(req.params.workspaceId)
+
+    const user = await User.findOne({
+      where: {
+        id: userId,
+      },
+    })
+
+    const existedWorkspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+      relations: ['users'],
+    })
+
+    // return 404 if workspace not found
+    if (existedWorkspace === null || user === null) {
+      const response: ErrorBody = {
+        message: 'Not found',
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+
+      return res.status(StatusCodes.NOT_FOUND).json(response)
+    }
+
+    // Remove the user where userId in list workspace users array
+    existedWorkspace.users = existedWorkspace.users.filter((user) => {
+      return user.id !== userId
+    })
+
+    await existedWorkspace.save()
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK })
   }
 }

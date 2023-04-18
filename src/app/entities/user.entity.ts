@@ -19,6 +19,7 @@ import * as jwt from 'jsonwebtoken'
 import { Request } from './request.entity'
 import { Group } from './group.entity'
 import { GenderEnums } from '@shared/enums'
+import { Workspace } from './workspace.entity'
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
@@ -70,6 +71,9 @@ export class User extends BaseEntity {
     inverseJoinColumn: { name: 'group_id', referencedColumnName: 'id' },
   })
   groups: Group[]
+
+  @ManyToMany(() => Workspace, (workspace) => workspace.users)
+  workspaces: Workspace[]
 
   @BeforeInsert()
   async hasPassword() {
