@@ -287,8 +287,6 @@ export class RequestDayOffController {
       },
     })
 
-    console.log('group: ', group)
-
     if (!group.length) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'q' })
     }
@@ -305,13 +303,20 @@ export class RequestDayOffController {
       user: user,
     }).save()
 
+    //Find user approve
+    const userApproveBySlack = await User.findOne({
+      where: {
+        slackId: slackId || payload?.user.id,
+      },
+    })
+
     //Create history
     await DayOff.create({
       action: statusApprove || payload.actions[0].value,
       name: user?.username,
       request,
       detail: {
-        name: user?.username,
+        name: userApproveBySlack?.username,
         value: statusApprove || payload.actions[0].value,
       },
     }).save()
@@ -353,8 +358,9 @@ export class RequestDayOffController {
         },
       }).save()
     }
-
+    console.log(payload)
     if (payload) {
+      console.log(123)
       return res.status(200).json('Approve successfully')
     } else {
       return res.status(200).json({ message: 'Approve successfully' })
@@ -443,7 +449,6 @@ export class RequestDayOffController {
       data.quantity = quantity
       data.typeRequest = typeRequest
       await data.save()
-      console.log(data)
 
       // insert new dayoff history
       await DayOff.create({

@@ -21,7 +21,7 @@ class RequestDayOffRoute {
       .route('/')
       .all(
         authentication,
-        authorization([Roles.Admin, Roles.Manager, Roles.Master]),
+        authorization([Roles.Admin, Roles.Manager, Roles.Master, Roles.Staff]),
       )
       .post(this.requestDayoffController.createRequest)
 
@@ -44,7 +44,7 @@ class RequestDayOffRoute {
       .route('/:requestId')
       .all(
         authentication,
-        authorization([Roles.Admin, Roles.Manager, Roles.Master]),
+        authorization([Roles.Admin, Roles.Manager, Roles.Master, Roles.Staff]),
       )
       .patch(this.requestDayoffController.editRequest)
   }

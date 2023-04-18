@@ -64,11 +64,11 @@ export class UsersController {
   }
 
   async getUsers(req: Request, res: Response) {
-    console.log(req.body)
+    console.log(req.body.payload)
     // const requestController = new RequestDayOffController()
 
     // await requestController.approveRequest(req, res)
 
-    return 1
+    return res.status(200).json({ message: 'success' })
   }
 }
