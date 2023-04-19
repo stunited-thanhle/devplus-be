@@ -19,23 +19,20 @@ class UsersRoute {
 
   private initializeRoutes() {
     this.router.route('/login').post(this.usersController.create)
-    this.router.route('/').get(this.usersController.getUsers)
-
     this.router
       .route('/')
-      // .all(authentication, authorization([Roles.Admin]))
-      .post(this.usersController.getUsers)
-    // this.router.route('/:id').get()
+      .all(authentication, authorization([Roles.Admin]))
+      .get(this.usersController.getUsers)
+
+    this.router
+      .route('/manager-role')
+      .all(authentication, authorization([Roles.Admin]))
+      .get(this.usersController.getMangerUsers)
 
     this.router
       .route('/:userId/roles')
-      .all(authentication, authorization([Roles.Manager]))
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .put(this.managerController.updateRole)
-
-    // this.router
-    //   .route('/:userId/requests')
-    //   .all(authentication)
-    //   .get(this.usersController.getUserRequests)
   }
 }
 
