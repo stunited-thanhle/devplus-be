@@ -3,9 +3,8 @@ import { Request as RequestEntity } from '@entities/request.entity'
 import { StatusCodes } from 'http-status-codes'
 import { Request, Response } from 'express'
 import { google } from 'googleapis'
-import { User } from '@entities/user.entity'
 import { DayOff } from '@entities/dayoff.entity'
-import { createConnection } from 'typeorm'
+
 import dataSourceConfig from '@shared/config/data-source.config'
 
 export class DayOffController {
@@ -48,18 +47,10 @@ export class DayOffController {
       .innerJoinAndSelect('request.user', 'user', 'user.id = request.userId')
       .getRawMany()
 
-    console.log(dayoffs)
-
     // Instance of Google Sheets API
     const sheets = google.sheets({ version: 'v4', auth })
 
-    const spreadsheetId = '1QsC_bAqZziXV7WY9KKEtc90rXOHFp6HXDO7-IkQcYAw'
-
-    // write the user data to the spreadsheet
-    // const sheetData = [
-    //   ['ID', 'Name', 'Email'],
-    //   ...users.map((user) => [user.id, user.username, user.email]),
-    // ]
+    const spreadsheetId = process.env.GOOGLE_SHEETS_SPREAD_SHEET_ID
 
     const sheetData = [
       ['Id', 'User Name', 'Reason', 'From', 'To', 'Quantity'],
@@ -99,7 +90,7 @@ export class DayOffController {
     return res.status(StatusCodes.OK).json({
       message: 'Successfully',
       statusCode: StatusCodes.OK,
-      url: 'https://shorturl.at/kmnvF',
+      url: process.env.GOOGLE_SHEETS_URL_FILE,
     })
   }
 }
