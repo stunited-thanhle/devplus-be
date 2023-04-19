@@ -1,6 +1,5 @@
 import { Router } from 'express'
-import { authentication, authorization } from '@shared/middleware'
-import { Roles } from '@shared/enums'
+import { authentication } from '@shared/middleware'
 import { DayOffController } from '@controllers/dayoff.controller'
 
 class DayoffRoute {
