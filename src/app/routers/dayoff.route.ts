@@ -16,6 +16,10 @@ class DayoffRoute {
 
   private initializeRoutes() {
     this.router
+      .route('/dayoffs/export-dayoffs')
+      .post(this.dayoffController.exportDataDayOffs)
+
+    this.router
       .route('/:requestId/dayoffs')
       .all(authentication)
       .get(this.dayoffController.getDayoffDetail)
