@@ -64,7 +64,9 @@ export class UsersController {
   }
 
   async getUsers(req: Request, res: Response) {
-    const users = await User.find()
+    const users = await User.find({
+      relations: ['role'],
+    })
     return res.status(StatusCodes.OK).json(users)
   }
 
