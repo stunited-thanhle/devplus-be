@@ -110,3 +110,49 @@ export const slackNotiDayoff = (
 
   return JSON.stringify(data)
 }
+
+export const slackNotiRejectToStaff = (
+  staffSlackId: string,
+  staffName: string,
+  masterName: string,
+) => {
+  const data = {
+    channel: staffSlackId,
+    text: '<!channel>',
+    attachments: [
+      {
+        blocks: [
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `Hi *${staffName}* :wave:`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: `We're sorry that your request was declined by ${masterName} \n Your request may be denied for the following reasons:`,
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: '• Important meeting \n • The reason is not clear \n • You have taken too much time off compared to the regulations',
+            },
+          },
+          {
+            type: 'section',
+            text: {
+              type: 'mrkdwn',
+              text: 'Please check your personal schedule or contact your master',
+            },
+          },
+        ],
+      },
+    ],
+  }
+  return JSON.stringify(data)
+}

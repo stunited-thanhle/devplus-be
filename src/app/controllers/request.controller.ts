@@ -9,12 +9,36 @@ import { StatusCodes } from 'http-status-codes'
 import { Roles, StatusApproval, TypeRequestEnums } from '@shared/enums'
 import { In } from 'typeorm'
 import http from 'https'
-import { slackNoti, slackNotiDayoff } from '@shared/templates/slackNotification'
+import {
+  slackNoti,
+  slackNotiDayoff,
+  slackNotiRejectToStaff,
+} from '@shared/templates/slackNotification'
 import { DayOff } from '@entities/dayoff.entity'
 import * as ValidateHelper from '@shared/helper'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import dataSourceConfig from '@shared/config/data-source.config'
 import { TITLE_SLACK_NOTIFY } from '@shared/constant'
+
+const sendNotiReject = (
+  options: any,
+  staffSlackId: string,
+  staffName: string,
+  masterName: string,
+) => {
+  const postData = slackNotiRejectToStaff(staffSlackId, staffName, masterName)
+  const rq = http.request(options, (res) => {
+    res.on('data', (data) => {
+      console.log(data.toString())
+    })
+  })
+  rq.on('error', (error) => {
+    console.error(error)
+  })
+  rq.write(postData)
+  rq.end()
+  return true
+}
 
 const sendMessageToDayoff = (
   options: any,
@@ -288,9 +312,10 @@ export class RequestDayOffController {
     })
 
     if (!group.length) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Bad request', statusCode: StatusCodes.BAD_REQUEST })
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'Master is not in the group',
+        statusCode: StatusCodes.BAD_REQUEST,
+      })
     }
 
     if (new Date(request.from) > new Date()) {
@@ -311,6 +336,30 @@ export class RequestDayOffController {
         slackId: slackId || payload?.user.id,
       },
     })
+
+    //Send noti for user request
+    const options = {
+      hostname: 'slack.com',
+      port: 443,
+      path: '/api/chat.postMessage',
+      method: 'POST',
+      headers: {
+        Accept: '*',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.SLACK_TOKEN}`,
+      },
+    }
+    if (
+      statusApprove === StatusApproval.REJECT ||
+      payload.actions[0].value === StatusApproval.REJECT
+    ) {
+      sendNotiReject(
+        options,
+        user.slackId,
+        user.username,
+        userApproveBySlack.username,
+      )
+    }
 
     //Create history
     await DayOff.create({
@@ -360,12 +409,19 @@ export class RequestDayOffController {
         },
       }).save()
     }
-    console.log(payload)
+
     if (payload) {
-      console.log(123)
-      return res.status(200).json('Approve successfully')
+      const message =
+        payload.actions[0].value === StatusApproval.ACCEPT
+          ? 'Approve successfully'
+          : 'Reject successfully'
+      return res.status(200).json(message)
     } else {
-      return res.status(200).json({ message: 'Approve successfully' })
+      const message =
+        statusApprove === StatusApproval.ACCEPT
+          ? 'Approve successfully'
+          : 'Reject successfully'
+      return res.status(200).json({ message })
     }
   }
 
