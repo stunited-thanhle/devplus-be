@@ -6,7 +6,6 @@ import { ErrorBody } from '@shared/interface/errorInterface'
 import { Roles, workspaceStatus } from '@shared/enums'
 import { User } from '@entities/user.entity'
 import dataSourceConfig from '@shared/config/data-source.config'
-import { Role } from '@entities/role.entity'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
@@ -48,17 +47,11 @@ export class WorkspaceController {
   }
 
   async readLstWorkspace(req: Request, res: Response) {
-    const managerRole = await Role.findOne({
-      where: {
-        name: Roles.Manager,
-      },
-    })
-
     const workspace = await dataSourceConfig
       .getRepository(Workspace)
       .createQueryBuilder('workspace')
       .leftJoinAndSelect('workspace.users', 'users')
-      .innerJoinAndSelect('users.role', 'role', 'role.name = :name', {
+      .leftJoinAndSelect('users.role', 'role', 'role.name = :name', {
         name: Roles.Manager,
       })
       .getMany()

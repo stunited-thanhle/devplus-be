@@ -21,7 +21,6 @@ class GroupMemberRoute {
       .get(this.groupMemberController.listGroups)
       .post(this.groupMemberController.createGroupMember)
 
-    this.router.route('/users').get(this.groupMemberController.listGroupByUser)
     this.router
       .route('/assign-to-group')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))

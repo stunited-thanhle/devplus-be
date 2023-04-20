@@ -9,22 +9,9 @@ import { workspaceStatus } from '@shared/enums'
 
 export class GroupMemberController {
   async listGroups(req: Request, res: Response) {
-    const listGroups = await Group.find()
+    const groups = await Group.find()
 
-    return res.status(StatusCodes.OK).json(listGroups)
-  }
-
-  async listGroupByUser(req: any, res: Response) {
-    const data = await Group.find({
-      relations: ['users'],
-      where: {
-        users: {
-          id: 2,
-        },
-      },
-    })
-
-    return res.status(StatusCodes.OK).json(data)
+    return res.status(StatusCodes.OK).json(groups)
   }
 
   async groupDetail(req: Request, res: Response) {
