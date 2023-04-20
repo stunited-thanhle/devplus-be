@@ -51,6 +51,35 @@ export class DayOffController {
     const sheets = google.sheets({ version: 'v4', auth })
 
     const spreadsheetId = process.env.GOOGLE_SHEETS_SPREAD_SHEET_ID
+    const sheetTitle = 'Dayoff Data'
+
+    // check if the sheet already exists
+    const sheetExists = await sheets.spreadsheets
+      .get({
+        spreadsheetId,
+      })
+      .then((response) => {
+        const sheets = response.data.sheets
+        return sheets.some((sheet) => sheet.properties.title === sheetTitle)
+      })
+
+    // create the sheet if it doesn't exist
+    if (!sheetExists) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              addSheet: {
+                properties: {
+                  title: sheetTitle,
+                },
+              },
+            },
+          ],
+        },
+      })
+    }
 
     const sheetData = [
       ['Id', 'User Name', 'Reason', 'From', 'To', 'Quantity'],
@@ -65,10 +94,10 @@ export class DayOffController {
     ]
 
     // user range tu a1 den c + user leng +1
-    const range = 'Sheet1!A1:F' + (dayoffs.length + 1)
+    const range = sheetTitle + '!A1:F' + (dayoffs.length + 1)
 
     const updateOptions = {
-      spreadsheetId: spreadsheetId,
+      spreadsheetId,
       range,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
@@ -77,8 +106,6 @@ export class DayOffController {
     }
 
     const result = await sheets.spreadsheets.values.update(updateOptions)
-    console.log(result)
-    console.log('User data has been exported to the Google Sheet.')
 
     if (result.status !== StatusCodes.OK) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
