@@ -5,6 +5,8 @@ import { StatusCodes } from 'http-status-codes'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import { Roles, workspaceStatus } from '@shared/enums'
 import { User } from '@entities/user.entity'
+import dataSourceConfig from '@shared/config/data-source.config'
+import { Role } from '@entities/role.entity'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
@@ -46,18 +48,22 @@ export class WorkspaceController {
   }
 
   async readLstWorkspace(req: Request, res: Response) {
-    const result = await Workspace.find({
-      relations: ['users'],
+    const managerRole = await Role.findOne({
       where: {
-        users: {
-          role: {
-            name: Roles.Manager,
-          },
-        },
+        name: Roles.Manager,
       },
     })
 
-    return res.status(StatusCodes.OK).json(result)
+    const workspace = await dataSourceConfig
+      .getRepository(Workspace)
+      .createQueryBuilder('workspace')
+      .leftJoinAndSelect('workspace.users', 'users')
+      .innerJoinAndSelect('users.role', 'role', 'role.name = :name', {
+        name: Roles.Manager,
+      })
+      .getMany()
+
+    return res.status(StatusCodes.OK).json(workspace)
   }
   async updateWorkspace(req: Request, res: Response) {
     const { name, status }: { name: string; status: workspaceStatus } = req.body
