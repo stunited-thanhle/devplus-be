@@ -3,6 +3,9 @@ import { ErrorBody } from '@shared/interface/errorInterface'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import * as ValidateHelper from '@shared/helper'
+import { Role } from '@entities/role.entity'
+import { Not } from 'typeorm'
+import { Roles } from '@shared/enums'
 export class AuthController {
   async login(req: Request, res: Response) {
     const { email, password } = req.body
@@ -43,5 +46,26 @@ export class AuthController {
   async getUsers(req: Request, res: Response) {
     const data = await User.find({})
     return res.status(200).json(data)
+  }
+
+  async getRoles(req: any, res: Response) {
+    console.log(req.user)
+    const currentUser = req.user
+
+    // Admin get all role
+    let roles = await Role.find({})
+
+    // Manager get role not include admin
+    if (currentUser.role === Roles.Manager) {
+      roles = await Role.find({
+        where: {
+          name: Not(Roles.Admin),
+        },
+      })
+    }
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Sucessfully', statusCode: StatusCodes.OK, roles })
   }
 }
