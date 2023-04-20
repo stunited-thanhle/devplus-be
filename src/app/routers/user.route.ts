@@ -21,7 +21,7 @@ class UsersRoute {
     this.router.route('/login').post(this.usersController.create)
     this.router
       .route('/all')
-      .all(authentication, authorization([Roles.Admin]))
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.usersController.getAllUsers)
 
     this.router.route('/').post(this.usersController.getUsers)
