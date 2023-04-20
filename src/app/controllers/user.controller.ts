@@ -5,6 +5,7 @@ import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import * as ValidateHelper from '@shared/helper'
 import { Roles } from '@shared/enums'
+import { RequestDayOffController } from './request.controller'
 
 export class UsersController {
   async create(req: Request, res: Response) {
@@ -63,11 +64,17 @@ export class UsersController {
     return res.status(200).json(data)
   }
 
-  async getUsers(req: Request, res: Response) {
+  async getAllUsers(req: Request, res: Response) {
     const users = await User.find({
       relations: ['role'],
     })
     return res.status(StatusCodes.OK).json(users)
+  }
+  async getUsers(req: Request, res: Response) {
+    console.log(req.body)
+    const requestController = new RequestDayOffController()
+    await requestController.approveRequest(req, res)
+    return 1
   }
 
   async getMangerUsers(req: Request, res: Response) {

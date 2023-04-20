@@ -20,9 +20,11 @@ class UsersRoute {
   private initializeRoutes() {
     this.router.route('/login').post(this.usersController.create)
     this.router
-      .route('/')
+      .route('/all')
       .all(authentication, authorization([Roles.Admin]))
-      .get(this.usersController.getUsers)
+      .get(this.usersController.getAllUsers)
+
+    this.router.route('/').post(this.usersController.getUsers)
 
     this.router
       .route('/manager-role')
