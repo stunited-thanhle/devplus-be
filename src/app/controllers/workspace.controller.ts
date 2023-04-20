@@ -28,13 +28,8 @@ export class WorkspaceController {
     const result = await Workspace.findOne({
       where: {
         id: workspaceId,
-        users: {
-          role: {
-            name: Roles.Manager,
-          },
-        },
       },
-      relations: ['users'],
+      relations: ['users.role'],
     })
 
     if (result === null) {
