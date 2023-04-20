@@ -47,7 +47,14 @@ export class WorkspaceController {
   }
 
   async readLstWorkspace(req: Request, res: Response) {
-    const workspace = await dataSourceConfig
+    const type = req.query.type
+
+    if (type !== undefined && type == 'get-all') {
+      const workspaces = await Workspace.find()
+      return res.status(StatusCodes.OK).json(workspaces)
+    }
+
+    const workspaces = await dataSourceConfig
       .getRepository(Workspace)
       .createQueryBuilder('workspace')
       .leftJoinAndSelect('workspace.users', 'users')
@@ -56,7 +63,7 @@ export class WorkspaceController {
       })
       .getMany()
 
-    return res.status(StatusCodes.OK).json(workspace)
+    return res.status(StatusCodes.OK).json(workspaces)
   }
   async updateWorkspace(req: Request, res: Response) {
     const { name, status }: { name: string; status: workspaceStatus } = req.body
