@@ -193,6 +193,26 @@ export class WorkspaceController {
       return res.status(StatusCodes.NOT_FOUND).json(response)
     }
 
+    // Check is user are existed in the workspace
+    const checkUserExistedInWorkspace = await dataSourceConfig
+      .getRepository(Workspace)
+      .createQueryBuilder('workspaces')
+      .where('workspaces.id = :workspaceId', { workspaceId: workspaceId })
+      .leftJoinAndSelect('workspaces.users', 'users', 'users.id = :userId', {
+        userId: userId,
+      })
+      .getOne()
+
+    if (
+      Array.isArray(checkUserExistedInWorkspace.users) &&
+      checkUserExistedInWorkspace.users.length === 0
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'User are not assign to workspace',
+        statusCode: StatusCodes.BAD_REQUEST,
+      })
+    }
+
     // Remove the user where userId in list workspace users array
     existedWorkspace.users = existedWorkspace.users.filter((user) => {
       return user.id !== userId
