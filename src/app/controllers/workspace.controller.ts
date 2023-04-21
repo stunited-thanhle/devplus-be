@@ -138,6 +138,26 @@ export class WorkspaceController {
       return res.status(StatusCodes.NOT_FOUND).json(response)
     }
 
+    // Check is user are existed in the workspace
+    const checkUserExistedInWorkspace = await dataSourceConfig
+      .getRepository(Workspace)
+      .createQueryBuilder('workspaces')
+      .where('workspaces.id = :workspaceId', { workspaceId: workspaceId })
+      .leftJoinAndSelect('workspaces.users', 'users', 'users.id = :userId', {
+        userId: userId,
+      })
+      .getOne()
+
+    if (
+      Array.isArray(checkUserExistedInWorkspace.users) &&
+      checkUserExistedInWorkspace.users.length !== 0
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'User have already existed in the current workspace',
+        statusCode: StatusCodes.BAD_REQUEST,
+      })
+    }
+
     existedWorkspace.users = [...existedWorkspace.users, user]
     await existedWorkspace.save()
 

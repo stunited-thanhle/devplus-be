@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import { User } from '@entities/user.entity'
 
 import { Role } from '@entities/role.entity'
-import { Group } from '@entities/group.entity'
 import { Roles } from '@shared/enums'
 
 export class StaffController {
@@ -94,6 +93,44 @@ export class StaffController {
 
     return res.status(StatusCodes.OK).json({
       message: 'Successfully',
+      statusCode: StatusCodes.OK,
+    })
+  }
+
+  async assignToMaster(req: Request, res: Response) {
+    const staffId = parseInt(req.params.staffId)
+
+    // Check staff is existed
+    const staff = await User.findOne({
+      relations: ['role'],
+      where: {
+        id: staffId,
+        role: {
+          name: Roles.Staff, // Role must be staff
+        },
+      },
+    })
+
+    // Return 404 http if staff not found
+    if (staff === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Staff not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    // Get manager role
+    const masterRole = await Role.findOne({
+      where: {
+        name: Roles.Master,
+      },
+    })
+
+    // assign staff to master
+    staff.role = masterRole
+    await staff.save()
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Assign to master successfully',
       statusCode: StatusCodes.OK,
     })
   }
