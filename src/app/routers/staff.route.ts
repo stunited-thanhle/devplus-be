@@ -23,6 +23,11 @@ class StaffsRoute {
       .route('/:id')
       .all(authentication, authorization([Roles.Manager]))
       .put(this.staffController.editStaffAccount)
+
+    this.router
+      .route('/:staffId/assign-to-master')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .patch(this.staffController.assignToMaster)
   }
 }
 
