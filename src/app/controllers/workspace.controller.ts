@@ -208,7 +208,7 @@ export class WorkspaceController {
       checkUserExistedInWorkspace.users.length === 0
     ) {
       return res.status(StatusCodes.BAD_REQUEST).json({
-        message: 'User are not assign to workspace',
+        message: 'User have not been assign to workspace before',
         statusCode: StatusCodes.BAD_REQUEST,
       })
     }
