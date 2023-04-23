@@ -10,21 +10,51 @@ import dataSourceConfig from '@shared/config/data-source.config'
 import { Role } from '@entities/role.entity'
 
 export class GroupMemberController {
-  //get all groups
   async getAllGroups(req: Request, res: Response) {
+    const staffRole = await Role.findOne({
+      where: {
+        name: Roles.Staff,
+      },
+    })
+
+    const masterRole = await Role.findOne({
+      where: {
+        name: Roles.Master,
+      },
+    })
+
+    // Groups include user with role staff
     const groups = await dataSourceConfig
       .getRepository(Group)
       .createQueryBuilder('group')
       .leftJoinAndSelect('group.workspace', 'workspace')
+      .leftJoinAndSelect('group.users', 'user', 'user.roleId = :staffRoleId', {
+        staffRoleId: staffRole.id,
+      })
       .orderBy('workspace.id')
       .getMany()
+
+    const masterUsers = await dataSourceConfig
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.groups', 'group')
+      .where('user.roleId = :masterRoleId', { masterRoleId: masterRole.id })
+      .getMany()
+
+    const groupsWithMaster = groups.map((group) => ({
+      ...group,
+      master: masterUsers.filter((user) =>
+        user.groups.some((g) => g.id === group.id),
+      ),
+    }))
 
     return res.status(StatusCodes.OK).json({
       message: 'Successfully',
       statusCode: StatusCodes.OK,
-      groups,
+      groups: groupsWithMaster,
     })
   }
+
   // list all gruop by workspace
   async listGroups(req: Request, res: Response) {
     const workspaceId = parseInt(req.params.workspaceId)
