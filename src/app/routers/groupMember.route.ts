@@ -24,20 +24,21 @@ class GroupMemberRoute {
       .route('/:workspaceId/groups')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.groupMemberController.listGroups)
-      .post(this.groupMemberController.createGroup)
+
+    this.router.route('/').post(this.groupMemberController.createGroup)
 
     this.router
-      .route('/:workspaceId/groups/:groupId/assign-to-group')
+      .route('/groups/assign-to-group')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .post(this.groupMemberController.assignMemberToGroup)
 
     this.router
-      .route('/:workspaceId/groups/:groupId/unassign-to-group')
+      .route('/groups/unassign-to-group')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .post(this.groupMemberController.unAssignMemberToGroup)
 
     this.router
-      .route('/:workspaceId/groups/:groupId')
+      .route('/groups/:id')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.groupMemberController.groupDetail)
 

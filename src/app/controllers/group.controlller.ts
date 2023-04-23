@@ -31,7 +31,8 @@ export class GroupMemberController {
       .leftJoinAndSelect('group.users', 'user', 'user.roleId = :staffRoleId', {
         staffRoleId: staffRole.id,
       })
-      .orderBy('workspace.id')
+      .orderBy('group.created_at', 'DESC')
+      .addOrderBy('workspace.id')
       .getMany()
 
     const masterUsers = await dataSourceConfig
@@ -84,23 +85,25 @@ export class GroupMemberController {
   }
 
   async groupDetail(req: Request, res: Response) {
-    const groupId = parseInt(req.params.groupId)
+    const groupId = parseInt(req.params.id)
 
     const groupDetail = await Group.findOne({
       where: {
         id: groupId,
       },
-      relations: ['users'],
+      relations: ['users', 'users.role'],
     })
 
-    return res.status(StatusCodes.OK).json(groupDetail)
+    const master = groupDetail.users.filter(
+      (user) => user.role.name === Roles.Master,
+    )
+
+    return res.status(StatusCodes.OK).json({ ...groupDetail, masters: master })
   }
 
   async createGroup(req: Request, res: Response) {
-    const workspaceId = parseInt(req.params.workspaceId)
-
-    const { name }: { name: string } = req.body
-
+    const { name, workSpaceId }: { name: string; workSpaceId: number } =
+      req.body
     const fields = ['name']
 
     const error = ValidateHelper.validate(fields, req.body)
@@ -129,7 +132,7 @@ export class GroupMemberController {
 
     const workspace = await Workspace.findOne({
       where: {
-        id: workspaceId,
+        id: workSpaceId,
       },
     })
 
@@ -154,9 +157,7 @@ export class GroupMemberController {
   }
 
   async assignMemberToGroup(req: Request, res: Response) {
-    const groupId = parseInt(req.params.groupId)
-
-    const { userId }: { userId: number } = req.body
+    const { userId, groupId }: { userId: number; groupId: number } = req.body
 
     const existedGroup = await Group.findOne({
       where: {
@@ -165,12 +166,13 @@ export class GroupMemberController {
       relations: ['users'],
     })
 
+    console.log(existedGroup)
+
     const user = await User.findOne({
       where: {
         id: userId,
       },
     })
-    console.log(user)
 
     if (user === null || existedGroup === null) {
       const response: ErrorBody = {
@@ -191,7 +193,7 @@ export class GroupMemberController {
       .getOne()
 
     if (
-      Array.isArray(checkUserExistedInGroup.users) &&
+      Array.isArray(checkUserExistedInGroup?.users) &&
       checkUserExistedInGroup.users.length !== 0
     ) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -211,9 +213,7 @@ export class GroupMemberController {
   }
 
   async unAssignMemberToGroup(req: Request, res: Response) {
-    const groupId = parseInt(req.params.groupId)
-
-    const { userId }: { userId: number } = req.body
+    const { userId, groupId }: { userId: number; groupId: number } = req.body
 
     const existedGroup = await Group.findOne({
       where: {
@@ -247,7 +247,7 @@ export class GroupMemberController {
       .getOne()
 
     if (
-      Array.isArray(checkUserExistedInGroup.users) &&
+      Array.isArray(checkUserExistedInGroup?.users) &&
       checkUserExistedInGroup.users.length === 0
     ) {
       return res.status(StatusCodes.BAD_REQUEST).json({
