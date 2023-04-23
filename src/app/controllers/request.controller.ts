@@ -130,6 +130,10 @@ export class RequestDayOffController {
       relations: ['user', 'requestApproves'],
     })
 
+    // const mastersOfGroups = await User.where({
+
+    // })
+
     return res.status(StatusCodes.OK).json(requests)
   }
 
