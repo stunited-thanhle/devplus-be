@@ -71,8 +71,10 @@ const sendMessageToDayoff = (
 }
 export class RequestDayOffController {
   async getRequests(req: any, res: Response) {
+    // Get id of the current auth user
     const currentUserId = req.user.id
 
+    // fInd the current auth user with role
     const currentUser = await User.findOne({
       relations: ['role'],
       where: {
@@ -80,9 +82,42 @@ export class RequestDayOffController {
       },
     })
 
+    if (currentUser === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'User not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    // lay toan bo group cua master
+    const groupRequestByUser = (
+      await User.findOne({
+        where: {
+          id: currentUserId,
+        },
+        relations: ['groups'],
+      })
+    ).groups.map((item) => item.id)
+
+    //Lay tat ca master cua group userid nam trong do
+    const masters = (
+      await User.find({
+        where: {
+          groups: {
+            id: In(groupRequestByUser),
+          },
+          role: {
+            name: Roles.Master,
+          },
+        },
+      })
+    ).map((item) => item.id)
+
+    console.log(masters)
+
+    // Return resquest of staff role
     if (currentUser.role.name === Roles.Staff) {
-      // lay toan bo group cua master
       const requests = await RequestEntity.find({
+        relations: ['requestApproves'],
         where: {
           user: {
             id: currentUserId,
@@ -93,20 +128,10 @@ export class RequestDayOffController {
       return res.status(StatusCodes.OK).json(requests)
     }
 
+    // Return request day off of master
     if (currentUser.role.name === Roles.Master) {
-      // lay toan bo group cua master
-      const groupRequestByUser = (
-        await User.findOne({
-          where: {
-            id: currentUserId,
-          },
-          relations: ['groups'],
-        })
-      ).groups.map((item) => item.id)
-
-      // get all the user in all gruops of master
+      // lay toan bo user cua toan bo group cua master
       const usersInGroups = await User.find({
-        relations: ['groups'],
         where: {
           groups: {
             id: In(groupRequestByUser),
@@ -114,11 +139,14 @@ export class RequestDayOffController {
         },
       })
 
+      const userIdList = usersInGroups.map((item) => item.id)
+
+      // Lay toan bo request
       const requests = await RequestEntity.find({
-        relations: ['user', 'requestApproves'],
+        relations: ['requestApproves'],
         where: {
           user: {
-            id: In(usersInGroups),
+            id: In(userIdList),
           },
         },
       })
@@ -126,13 +154,10 @@ export class RequestDayOffController {
       return res.status(StatusCodes.OK).json(requests)
     }
 
+    // lay tat ca neu user authentication la admin hoac manager
     const requests = await RequestEntity.find({
       relations: ['user', 'requestApproves'],
     })
-
-    // const mastersOfGroups = await User.where({
-
-    // })
 
     return res.status(StatusCodes.OK).json(requests)
   }
