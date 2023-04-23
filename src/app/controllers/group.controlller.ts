@@ -10,6 +10,22 @@ import dataSourceConfig from '@shared/config/data-source.config'
 import { Role } from '@entities/role.entity'
 
 export class GroupMemberController {
+  //get all groups
+  async getAllGroups(req: Request, res: Response) {
+    const groups = await dataSourceConfig
+      .getRepository(Group)
+      .createQueryBuilder('group')
+      .leftJoinAndSelect('group.workspace', 'workspace')
+      .orderBy('workspace.id')
+      .getMany()
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+      groups,
+    })
+  }
+  // list all gruop by workspace
   async listGroups(req: Request, res: Response) {
     const workspaceId = parseInt(req.params.workspaceId)
 

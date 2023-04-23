@@ -16,6 +16,11 @@ class GroupMemberRoute {
 
   private initializeRoutes() {
     this.router
+      .route('/list-all-groups')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .get(this.groupMemberController.getAllGroups)
+
+    this.router
       .route('/:workspaceId/groups')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.groupMemberController.listGroups)
