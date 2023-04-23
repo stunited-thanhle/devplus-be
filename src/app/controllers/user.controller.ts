@@ -6,6 +6,9 @@ import { StatusCodes } from 'http-status-codes'
 import * as ValidateHelper from '@shared/helper'
 import { Roles } from '@shared/enums'
 import { RequestDayOffController } from './request.controller'
+import { Group } from '@entities/group.entity'
+import { Workspace } from '@entities/workspace.entity'
+import dataSourceConfig from '@shared/config/data-source.config'
 
 export class UsersController {
   async create(req: Request, res: Response) {
@@ -88,5 +91,64 @@ export class UsersController {
     })
 
     return res.status(StatusCodes.OK).json(users)
+  }
+
+  async getUserGroups(req: any, res: Response) {
+    const userId = req.user.id
+    const workspaceId = parseInt(req.params.workspaceId)
+
+    const workspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+    })
+
+    const user = await User.findOne({
+      where: {
+        id: userId,
+      },
+    })
+
+    if (workspace === null || user === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'User not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    // Check is user are existed in the workspace
+    const checkUserExistedInWorkspace = await dataSourceConfig
+      .getRepository(Workspace)
+      .createQueryBuilder('workspaces')
+      .where('workspaces.id = :workspaceId', { workspaceId: workspaceId })
+      .leftJoinAndSelect('workspaces.users', 'users', 'users.id = :userId', {
+        userId: userId,
+      })
+      .getOne()
+
+    if (
+      Array.isArray(checkUserExistedInWorkspace.users) &&
+      checkUserExistedInWorkspace.users.length === 0
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'User not existed in the workspace',
+        statusCode: StatusCodes.BAD_REQUEST,
+      })
+    }
+
+    const userGroups = await Group.find({
+      relations: ['workspace'],
+      where: {
+        users: {
+          id: user.id,
+        },
+        workspace: {
+          id: workspaceId,
+        },
+      },
+    })
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK, userGroups })
   }
 }

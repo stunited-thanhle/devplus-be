@@ -4,7 +4,7 @@ import { authentication, authorization } from '@shared/middleware'
 import { Router } from 'express'
 
 class GroupMemberRoute {
-  public path = '/groups'
+  public path = '/workspaces'
   public router = Router()
 
   private groupMemberController: GroupMemberController
@@ -16,23 +16,23 @@ class GroupMemberRoute {
 
   private initializeRoutes() {
     this.router
-      .route('/')
-      .all(authentication, authorization([Roles.Manager]))
+      .route('/:workspaceId/groups')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.groupMemberController.listGroups)
-      .post(this.groupMemberController.createGroupMember)
+      .post(this.groupMemberController.createGroup)
 
     this.router
-      .route('/assign-to-group')
+      .route('/:workspaceId/groups/:groupId/assign-to-group')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .post(this.groupMemberController.assignMemberToGroup)
 
     this.router
-      .route('/unassign-to-group')
+      .route('/:workspaceId/groups/:groupId/unassign-to-group')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .post(this.groupMemberController.unAssignMemberToGroup)
 
     this.router
-      .route('/:groupId')
+      .route('/:workspaceId/groups/:groupId')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.groupMemberController.groupDetail)
 
@@ -40,10 +40,15 @@ class GroupMemberRoute {
     //@route Put /groups/:groupId
     //@access private
     this.router
-      .route('/:groupId')
+      .route('/:workspaceId/groups/:groupId')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .put(this.groupMemberController.editGroup)
       .delete(this.groupMemberController.deleteGruop)
+
+    this.router
+      .route('/:workspaceId/groups/:groupId/staffs')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .get(this.groupMemberController.listStaffInGroup)
   }
 }
 

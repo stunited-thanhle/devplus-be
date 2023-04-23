@@ -5,11 +5,34 @@ import { ErrorBody } from '@shared/interface/errorInterface'
 import { Group } from '@entities/group.entity'
 import { Workspace } from '@entities/workspace.entity'
 import { User } from '@entities/user.entity'
-import { workspaceStatus } from '@shared/enums'
+import { Roles, workspaceStatus } from '@shared/enums'
+import dataSourceConfig from '@shared/config/data-source.config'
+import { Role } from '@entities/role.entity'
 
 export class GroupMemberController {
   async listGroups(req: Request, res: Response) {
-    const groups = await Group.find()
+    const workspaceId = parseInt(req.params.workspaceId)
+
+    const workspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+    })
+
+    if (workspace === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    const groups = await Group.find({
+      relations: ['workspace'],
+      where: {
+        workspace: {
+          id: workspace.id,
+        },
+      },
+    })
 
     return res.status(StatusCodes.OK).json(groups)
   }
@@ -27,11 +50,12 @@ export class GroupMemberController {
     return res.status(StatusCodes.OK).json(groupDetail)
   }
 
-  async createGroupMember(req: Request, res: Response) {
-    const { name, workSpaceId }: { name: string; workSpaceId: number } =
-      req.body
+  async createGroup(req: Request, res: Response) {
+    const workspaceId = parseInt(req.params.workspaceId)
 
-    const fields = ['name', 'workSpaceId']
+    const { name }: { name: string } = req.body
+
+    const fields = ['name']
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -59,7 +83,7 @@ export class GroupMemberController {
 
     const workspace = await Workspace.findOne({
       where: {
-        id: workSpaceId,
+        id: workspaceId,
       },
     })
 
@@ -70,8 +94,6 @@ export class GroupMemberController {
       }
       return res.status(StatusCodes.NOT_FOUND).json(response)
     }
-
-    console.log(workspace)
 
     const data = Group.create({
       name,
@@ -86,7 +108,9 @@ export class GroupMemberController {
   }
 
   async assignMemberToGroup(req: Request, res: Response) {
-    const { userId, groupId }: { userId: number; groupId: number } = req.body
+    const groupId = parseInt(req.params.groupId)
+
+    const { userId }: { userId: number } = req.body
 
     const existedGroup = await Group.findOne({
       where: {
@@ -110,6 +134,26 @@ export class GroupMemberController {
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
 
+    // Check is user are existed in the workspace
+    const checkUserExistedInGroup = await dataSourceConfig
+      .getRepository(Group)
+      .createQueryBuilder('groups')
+      .where('groups.id = :groupId', { groupId: groupId })
+      .leftJoinAndSelect('groups.users', 'users', 'users.id = :userId', {
+        userId: userId,
+      })
+      .getOne()
+
+    if (
+      Array.isArray(checkUserExistedInGroup.users) &&
+      checkUserExistedInGroup.users.length !== 0
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'User have already existed in the current group',
+        statusCode: StatusCodes.BAD_REQUEST,
+      })
+    }
+
     // assign staff to group
     existedGroup.users = [...existedGroup.users, user]
     await existedGroup.save()
@@ -121,7 +165,9 @@ export class GroupMemberController {
   }
 
   async unAssignMemberToGroup(req: Request, res: Response) {
-    const { userId, groupId }: { userId: number; groupId: number } = req.body
+    const groupId = parseInt(req.params.groupId)
+
+    const { userId }: { userId: number } = req.body
 
     const existedGroup = await Group.findOne({
       where: {
@@ -144,6 +190,26 @@ export class GroupMemberController {
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
 
+    // Check is user are existed in the workspace
+    const checkUserExistedInGroup = await dataSourceConfig
+      .getRepository(Group)
+      .createQueryBuilder('groups')
+      .where('groups.id = :groupId', { groupId: groupId })
+      .leftJoinAndSelect('groups.users', 'users', 'users.id = :userId', {
+        userId: userId,
+      })
+      .getOne()
+
+    if (
+      Array.isArray(checkUserExistedInGroup.users) &&
+      checkUserExistedInGroup.users.length === 0
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message: 'User have been not assign in the current group before',
+        statusCode: StatusCodes.BAD_REQUEST,
+      })
+    }
+
     // un-assign staff to group
     existedGroup.users = existedGroup.users.filter((user) => {
       return user.id !== currentUser.id
@@ -160,7 +226,21 @@ export class GroupMemberController {
   async editGroup(req: Request, res: Response) {
     const { name }: { name: string } = req.body
 
+    const workspaceId = parseInt(req.params.workspaceId)
+
     const groupId = parseInt(req.params.groupId)
+
+    const workspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+    })
+
+    if (workspace === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
+    }
 
     const fields = ['name']
 
@@ -209,7 +289,20 @@ export class GroupMemberController {
   }
 
   async deleteGruop(req: Request, res: Response) {
+    const workspaceId = parseInt(req.params.workspaceId)
     const groupId: number = parseInt(req.params.groupId)
+
+    const workspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+    })
+
+    if (workspace === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
+    }
 
     const existedGroup = await Group.findOne({
       where: {
@@ -227,5 +320,49 @@ export class GroupMemberController {
     return res
       .status(StatusCodes.OK)
       .json({ message: 'Successfully', statusCode: StatusCodes.OK })
+  }
+
+  async listStaffInGroup(req: Request, res: Response) {
+    const groupId = parseInt(req.params.groupId)
+    const workspaceId = parseInt(req.params.workspaceId)
+
+    const workspace = await Workspace.findOne({
+      where: {
+        id: workspaceId,
+      },
+    })
+
+    if (workspace === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    const staffRole = await Role.findOne({
+      where: {
+        name: Roles.Staff,
+      },
+    })
+
+    const group = await dataSourceConfig
+      .getRepository(Group)
+      .createQueryBuilder('group')
+      .where('group.id = :groupId', { groupId: groupId })
+      .leftJoinAndSelect('group.users', 'user', 'user.roleId = :roleId', {
+        roleId: staffRole.id,
+      })
+      .getOne()
+
+    if (group === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+      staffs: group.users,
+    })
   }
 }
