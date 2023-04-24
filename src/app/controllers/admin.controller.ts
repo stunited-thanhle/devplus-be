@@ -30,7 +30,16 @@ export class AdminController {
     return res.status(StatusCodes.OK).json(lstManager)
   }
   async createManager(req: Request, res: Response) {
-    const fields = ['email', 'password', 'username', 'gender', 'slackId']
+    const { username, email, password, gender, slackId, roleName } = req.body
+
+    const fields = [
+      'email',
+      'password',
+      'username',
+      'gender',
+      'slackId',
+      'roleName',
+    ]
 
     const error = ValidateHelper.validate(fields, req.body)
 
@@ -41,8 +50,6 @@ export class AdminController {
       }
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
-
-    const { username, email, password, gender, slackId } = req.body
 
     const dataToCheck = [
       { model: User, field: 'email', value: email },
@@ -60,12 +67,14 @@ export class AdminController {
       }
     }
 
+    // Get the role
     const roleData = await Role.findOne({
       where: {
-        name: Roles.Manager,
+        name: roleName,
       },
     })
 
+    // Create the new user with role
     const data = await User.create({
       email,
       username,
