@@ -1,27 +1,24 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
   BaseEntity,
+  Column,
   CreateDateColumn,
-  UpdateDateColumn,
   DeleteDateColumn,
-  OneToMany,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm'
 import { User } from './user.entity'
-import { Roles } from '@shared/enums'
+import { Workspace } from './workspace.entity'
 
-@Entity({ name: 'roles' })
-export class Role extends BaseEntity {
+@Entity({ name: 'groups' })
+export class Group extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({
-    type: 'enum',
-    enum: Roles,
-    default: Roles.Staff,
-  })
-  name: Roles
+  @Column({ name: 'name' })
+  name: string
 
   @CreateDateColumn({ nullable: false, name: 'created_at' })
   createdAt: Date
@@ -32,6 +29,9 @@ export class Role extends BaseEntity {
   @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date
 
-  @OneToMany(() => User, (user) => user.role)
+  @ManyToMany(() => User, (user) => user.groups)
   users: User[]
+
+  @ManyToOne(() => Workspace, (workspace) => workspace.groups)
+  workspace: Workspace
 }
