@@ -17,6 +17,11 @@ class AuthRoute {
       .route('/roles')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .get(this.authController.getRoles)
+
+    this.router
+      .route('/reset-password')
+      .all(authentication)
+      .put(this.authController.resetPassword)
   }
 }
 export const authRoute = new AuthRoute()
