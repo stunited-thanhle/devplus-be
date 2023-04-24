@@ -83,6 +83,7 @@ export class RequestDayOffController {
     if (currentUser.role.name === Roles.Staff) {
       // lay toan bo group cua master
       const requests = await RequestEntity.find({
+        relations: ['user', 'dayoffs'],
         where: {
           user: {
             id: currentUserId,
@@ -115,7 +116,7 @@ export class RequestDayOffController {
       })
 
       const requests = await RequestEntity.find({
-        relations: ['user', 'requestApproves'],
+        relations: ['user', 'requestApproves', 'dayoffs'],
         where: {
           user: {
             id: In(usersInGroups),
@@ -127,12 +128,8 @@ export class RequestDayOffController {
     }
 
     const requests = await RequestEntity.find({
-      relations: ['user', 'requestApproves'],
+      relations: ['user', 'requestApproves', 'dayoffs'],
     })
-
-    // const mastersOfGroups = await User.where({
-
-    // })
 
     return res.status(StatusCodes.OK).json(requests)
   }
