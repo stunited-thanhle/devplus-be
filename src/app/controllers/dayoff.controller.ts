@@ -11,7 +11,7 @@ export class DayOffController {
   async getDayoffDetail(req: Request, res: Response) {
     const requestId = parseInt(req.params.requestId)
 
-    const request = await RequestEntity.findOne({
+    const request = await RequestEntity.find({
       relations: ['user', 'dayoffs'],
       where: {
         id: requestId,

@@ -264,7 +264,7 @@ export class RequestDayOffController {
       where: {
         id: requestId,
       },
-      relations: ['dayoffs'],
+      relations: ['dayoffs', 'user'],
     })
 
     if (request === null) {
