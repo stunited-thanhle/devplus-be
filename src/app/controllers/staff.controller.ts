@@ -8,6 +8,27 @@ import { Role } from '@entities/role.entity'
 import { Roles } from '@shared/enums'
 
 export class StaffController {
+  async getListStaff(req: Request, res: Response) {
+    const { groupId } = req.query
+
+    const newGroupId = Number(groupId)
+
+    const staffs = await User.find({
+      where: {
+        role: {
+          name: Roles.Staff,
+        },
+        groups: {
+          id: newGroupId,
+        },
+      },
+    })
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK, staffs })
+  }
+
   async createStaffAccount(req: Request, res: Response) {
     const { username, email, password, gender, slackId } = req.body
 

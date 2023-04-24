@@ -16,6 +16,14 @@ class StaffsRoute {
   private initializeRoutes() {
     this.router
       .route('/')
+      .all(
+        authentication,
+        authorization([Roles.Admin, Roles.Manager, Roles.Master]),
+      )
+      .get(this.staffController.getListStaff)
+
+    this.router
+      .route('/')
       .all(authentication, authorization([Roles.Manager]))
       .post(this.staffController.createStaffAccount)
 

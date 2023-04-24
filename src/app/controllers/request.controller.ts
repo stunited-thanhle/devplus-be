@@ -322,12 +322,6 @@ export class RequestDayOffController {
       })
     }
 
-    if (new Date(request.from) > new Date()) {
-      if (payload) return 'Request is expired'
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Request is expired' })
-    }
     await RequestAppove.create({
       status: statusApprove || payload.actions[0].value,
       request: request,
