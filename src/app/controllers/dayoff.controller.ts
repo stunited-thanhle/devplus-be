@@ -12,10 +12,10 @@ export class DayOffController {
     const requestId = parseInt(req.params.requestId)
 
     const request = await RequestEntity.findOne({
+      relations: ['user', 'dayoffs'],
       where: {
         id: requestId,
       },
-      relations: ['dayoffs'],
     })
 
     if (request === null) {
@@ -24,7 +24,7 @@ export class DayOffController {
         .json({ message: 'Not found', statusCode: StatusCodes.NOT_FOUND })
     }
 
-    return res.status(StatusCodes.OK).json(request.dayoffs)
+    return res.status(StatusCodes.OK).json(request)
   }
 
   async exportDataDayOffs(req: Request, res: Response) {
