@@ -19,16 +19,16 @@ class RequestDayOffRoute {
   private initializeRoutes() {
     this.router
       .route('/')
+      .all(authentication)
+      .get(this.requestDayoffController.getRequests)
+
+    this.router
+      .route('/')
       .all(
         authentication,
         authorization([Roles.Admin, Roles.Manager, Roles.Master, Roles.Staff]),
       )
       .post(this.requestDayoffController.createRequest)
-
-    this.router
-      .route('/')
-      .all(authentication)
-      .get(this.requestDayoffController.getRequests)
 
     this.router
       .route('/:requestId')
