@@ -106,14 +106,16 @@ export class RequestDayOffController {
       ).groups.map((item) => item.id)
 
       // get all the user in all gruops of master
-      const usersInGroups = await User.find({
-        relations: ['groups'],
-        where: {
-          groups: {
-            id: In(groupRequestByUser),
+      const usersInGroups = (
+        await User.find({
+          relations: ['groups'],
+          where: {
+            groups: {
+              id: In(groupRequestByUser),
+            },
           },
-        },
-      })
+        })
+      ).map((item) => item.id)
 
       const requests = await RequestEntity.find({
         relations: ['user', 'requestApproves', 'dayoffs'],
