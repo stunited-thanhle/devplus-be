@@ -6,12 +6,25 @@ import { User } from '@entities/user.entity'
 
 import { Role } from '@entities/role.entity'
 import { Roles } from '@shared/enums'
+import { Group } from '@entities/group.entity'
 
 export class StaffController {
   async getListStaff(req: Request, res: Response) {
     const { groupId } = req.query
 
     const newGroupId = Number(groupId)
+
+    const group = await Group.findOne({
+      where: {
+        id: newGroupId,
+      },
+    })
+
+    if (group === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Group not found', statusCode: StatusCodes.NOT_FOUND })
+    }
 
     const staffs = await User.find({
       where: {

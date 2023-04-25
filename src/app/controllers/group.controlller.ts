@@ -94,6 +94,12 @@ export class GroupMemberController {
       relations: ['users', 'users.role'],
     })
 
+    if (groupDetail === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'Group not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
     const master = groupDetail.users.filter(
       (user) => user.role.name === Roles.Master,
     )
