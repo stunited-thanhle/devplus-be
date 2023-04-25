@@ -26,6 +26,11 @@ class AdminRoute {
       .route('/manager')
       .get(this.adminController.getLstManager)
       .post(this.adminController.createManager)
+
+    this.router
+      .route('/change-user-password')
+      .all(authentication)
+      .put(this.adminController.changeUserPassword)
   }
 }
 

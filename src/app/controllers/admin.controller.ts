@@ -5,6 +5,7 @@ import * as ValidateHelper from '@shared/helper'
 import { ErrorBody } from '@shared/interface/errorInterface'
 import { StatusCodes } from 'http-status-codes'
 import { Roles } from '@shared/enums'
+import * as bcrypt from 'bcryptjs'
 
 export class AdminController {
   async getManager(req: Request, res: Response) {
@@ -152,5 +153,56 @@ export class AdminController {
       message: 'Successfully',
       statusCode: StatusCodes.OK,
     })
+  }
+
+  async changeUserPassword(req: Request, res: Response) {
+    // Get the input from Form Body
+    const { userId, newPassword, newPasswordConfirm } = req.body
+
+    // Validate Fields
+    const fields = ['userId', 'newPassword', 'newPasswordConfirm']
+
+    const error = ValidateHelper.validate(fields, req.body)
+
+    if (error.length) {
+      const response: ErrorBody = {
+        message: error,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
+
+    // Compare the new password confirm is correct
+    if (newPasswordConfirm !== newPassword) {
+      const response: ErrorBody = {
+        message: 'Password confirm is not match',
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
+
+    // Check the the user is exsited
+    const user = await User.findOne({
+      where: {
+        id: Number(userId),
+      },
+    })
+
+    if (user === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'User not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    // Hash the new password
+    const passwordHash = await bcrypt.hash(newPassword, 10)
+
+    // Update the current password
+    user.password = passwordHash
+    await user.save()
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK })
   }
 }
