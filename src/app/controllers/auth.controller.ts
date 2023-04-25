@@ -119,4 +119,26 @@ export class AuthController {
       .status(StatusCodes.OK)
       .json({ message: 'Successfully', statusCode: StatusCodes.OK })
   }
+
+  async getuserProfile(req: any, res: Response) {
+    const authUser = await User.findOne({
+      where: {
+        id: req.user.id,
+      },
+    })
+
+    if (authUser === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'User not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    delete authUser.password
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+      user: authUser,
+    })
+  }
 }

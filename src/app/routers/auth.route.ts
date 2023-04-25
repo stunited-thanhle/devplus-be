@@ -22,6 +22,11 @@ class AuthRoute {
       .route('/reset-password')
       .all(authentication)
       .put(this.authController.resetPassword)
+
+    this.router
+      .route('/profile')
+      .all(authentication)
+      .get(this.authController.getuserProfile)
   }
 }
 export const authRoute = new AuthRoute()
