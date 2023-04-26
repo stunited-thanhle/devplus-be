@@ -346,7 +346,8 @@ export class RequestDayOffController {
         Authorization: `Bearer ${process.env.SLACK_TOKEN}`,
       },
     }
-    if (
+    if (statusApprove === StatusApproval.ACCEPT) {
+    } else if (
       statusApprove === StatusApproval.REJECT ||
       payload.actions[0].value === StatusApproval.REJECT
     ) {
