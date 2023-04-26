@@ -118,7 +118,7 @@ export class RequestDayOffController {
       ).map((item) => item.id)
 
       const requests = await RequestEntity.find({
-        relations: ['user', 'requestApproves', 'dayoffs'],
+        relations: ['user', 'requestApproves.user', 'dayoffs'],
         where: {
           user: {
             id: In(usersInGroups),
