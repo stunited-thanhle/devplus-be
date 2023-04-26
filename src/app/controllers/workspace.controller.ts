@@ -9,9 +9,10 @@ import dataSourceConfig from '@shared/config/data-source.config'
 
 export class WorkspaceController {
   async createWorkspace(req: Request, res: Response) {
-    const { body } = req
+    const { name } = req.body
     const fields = ['name']
-    const error = ValidateHelper.validate(fields, body)
+    const error = ValidateHelper.validate(fields, req.body)
+
     if (error.length) {
       const response: ErrorBody = {
         message: error,
@@ -19,7 +20,21 @@ export class WorkspaceController {
       }
       return res.status(StatusCodes.BAD_REQUEST).json(response)
     }
-    const result = await Workspace.create({ name: body.name }).save()
+
+    const dataToCheck = [{ model: Workspace, field: 'name', value: name }]
+
+    for (const { model, field, value } of dataToCheck) {
+      const exists = await ValidateHelper.checkExistence(model, field, value)
+      if (exists) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: `${field} already exists`,
+          statusCode: StatusCodes.BAD_REQUEST,
+        })
+      }
+    }
+
+    const result = await Workspace.create({ name }).save()
+
     return res.status(StatusCodes.OK).json(result)
   }
   async readWorkspace(req: Request, res: Response) {
