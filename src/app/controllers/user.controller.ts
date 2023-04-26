@@ -194,4 +194,26 @@ export class UsersController {
       users: filteredUsersNotInGroup,
     })
   }
+
+  async getDetailUserProfile(req: Request, res: Response) {
+    const userId = Number(req.params.userId)
+
+    const existedUser = await User.findOne({
+      where: {
+        id: userId,
+      },
+    })
+
+    if (existedUser === null) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: 'User not found', statusCode: StatusCodes.NOT_FOUND })
+    }
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+      users: existedUser,
+    })
+  }
 }
