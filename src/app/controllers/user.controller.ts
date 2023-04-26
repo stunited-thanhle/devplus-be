@@ -174,6 +174,7 @@ export class UsersController {
       .where('group_user.group_id != :groupId OR group_user.group_id IS NULL', {
         groupId: groupId,
       })
+      .leftJoinAndSelect('user.role', 'role')
       .getMany()
 
     return res.status(StatusCodes.OK).json({
