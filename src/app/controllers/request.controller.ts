@@ -263,7 +263,7 @@ export class RequestDayOffController {
       where: {
         id: requestId,
       },
-      relations: ['dayoffs', 'user'],
+      relations: ['dayoffs', 'user', 'requestApproves.user'],
     })
 
     if (request === null) {
