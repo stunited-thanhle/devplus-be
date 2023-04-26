@@ -32,6 +32,11 @@ class UsersRoute {
       .get(this.usersController.getMangerUsers)
 
     this.router
+      .route('/groups/:groupId/user-not-in-group')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .get(this.usersController.getUserNotInGroup)
+
+    this.router
       .route('/:userId/roles')
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .put(this.managerController.updateRole)

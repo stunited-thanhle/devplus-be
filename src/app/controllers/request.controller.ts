@@ -321,10 +321,14 @@ export class RequestDayOffController {
       })
     }
 
+    const master = await User.findOne({
+      where: { slackId: slackId || payload?.user.id },
+    })
+
     await RequestAppove.create({
       status: statusApprove || payload.actions[0].value,
       request: request,
-      user: user,
+      user: master,
     }).save()
 
     //Find user approve

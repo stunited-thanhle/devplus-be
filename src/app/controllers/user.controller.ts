@@ -9,6 +9,7 @@ import { RequestDayOffController } from './request.controller'
 import { Group } from '@entities/group.entity'
 import { Workspace } from '@entities/workspace.entity'
 import dataSourceConfig from '@shared/config/data-source.config'
+import { Not } from 'typeorm'
 
 export class UsersController {
   async create(req: Request, res: Response) {
@@ -150,5 +151,24 @@ export class UsersController {
     return res
       .status(StatusCodes.OK)
       .json({ message: 'Successfully', statusCode: StatusCodes.OK, userGroups })
+  }
+
+  async getUserNotInGroup(req: Request, res: Response) {
+    const groupId = Number(req.params.groupId)
+
+    const users = await dataSourceConfig
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoin('group_user', 'group_user', 'group_user.user_id = user.id')
+      .where('group_user.group_id != :groupId OR group_user.group_id IS NULL', {
+        groupId: groupId,
+      })
+      .getMany()
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+      users: users,
+    })
   }
 }
