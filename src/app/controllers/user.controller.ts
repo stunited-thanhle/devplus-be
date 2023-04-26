@@ -9,7 +9,6 @@ import { RequestDayOffController } from './request.controller'
 import { Group } from '@entities/group.entity'
 import { Workspace } from '@entities/workspace.entity'
 import dataSourceConfig from '@shared/config/data-source.config'
-import { Not } from 'typeorm'
 
 export class UsersController {
   async create(req: Request, res: Response) {
@@ -155,6 +154,18 @@ export class UsersController {
 
   async getUserNotInGroup(req: Request, res: Response) {
     const groupId = Number(req.params.groupId)
+
+    const group = await Group.findOne({
+      where: {
+        id: groupId,
+      },
+    })
+
+    if (group === null) {
+      return res
+        .status(StatusCodes.OK)
+        .json({ message: 'Group not found', statusCode: StatusCodes.NOT_FOUND })
+    }
 
     const users = await dataSourceConfig
       .getRepository(User)
