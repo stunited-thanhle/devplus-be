@@ -159,14 +159,10 @@ export class UsersController {
     const users = await dataSourceConfig
       .getRepository(User)
       .createQueryBuilder('user')
-      .leftJoin(
-        'group_user',
-        'group_user',
-        'group_user.group_id != :groupId OR group_user.group_id IS NULL',
-        {
-          groupId: groupId,
-        },
-      )
+      .leftJoin('group_user', 'group_user', 'group_user.user_id = user.id')
+      .where('group_user.group_id != :groupId OR group_user.group_id IS NULL', {
+        groupId: groupId,
+      })
       .getMany()
 
     return res.status(StatusCodes.OK).json({
