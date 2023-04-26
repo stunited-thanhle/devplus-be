@@ -156,6 +156,7 @@ export class UsersController {
     const groupId = Number(req.params.groupId)
 
     const group = await Group.findOne({
+      relations: ['users'],
       where: {
         id: groupId,
       },
@@ -167,7 +168,12 @@ export class UsersController {
         .json({ message: 'Group not found', statusCode: StatusCodes.NOT_FOUND })
     }
 
-    const users = await dataSourceConfig
+    // Những thằng user có trong group
+    const userInGroup = group.users
+    console.log('group: ', group)
+
+    // Những thằng user không có trong group se co trong group khac van hien thi ra
+    const usersNotInGroup = await dataSourceConfig
       .getRepository(User)
       .createQueryBuilder('user')
       .leftJoin('group_user', 'group_user', 'group_user.user_id = user.id')
@@ -177,10 +183,15 @@ export class UsersController {
       .leftJoinAndSelect('user.role', 'role')
       .getMany()
 
+    // Filter nhung thang user khong co trong group user
+    const filteredUsersNotInGroup = usersNotInGroup.filter(
+      (user: User) => !userInGroup.find((u: User) => u.id === user.id),
+    )
+
     return res.status(StatusCodes.OK).json({
       message: 'Successfully',
       statusCode: StatusCodes.OK,
-      users: users,
+      users: filteredUsersNotInGroup,
     })
   }
 }
