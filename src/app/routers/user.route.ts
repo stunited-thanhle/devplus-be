@@ -41,6 +41,12 @@ class UsersRoute {
       .all(authentication, authorization([Roles.Admin, Roles.Manager]))
       .put(this.managerController.updateRole)
 
+    //Route @Get Detail user's profile
+    this.router
+      .route('/:userId/profiles')
+      .all(authentication, authorization([Roles.Admin, Roles.Manager]))
+      .get(this.usersController.getDetailUserProfile)
+
     this.router
       .route('/:userId/workspaces/:workSpaceId/groups')
       .all(authentication)
