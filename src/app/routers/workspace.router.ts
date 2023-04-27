@@ -41,6 +41,11 @@ class WorkspaceRoute {
       .route('/:workspaceId/unassign-user')
       .all(authentication, authorization([Roles.Admin]))
       .post(this.workspaceController.unAssignUserFromWorkSpace)
+
+    this.router
+      .route('/:workspaceId/users-not-in-workspace')
+      .all(authentication, authorization([Roles.Admin]))
+      .get(this.workspaceController.getUserNotInWorkSpace)
   }
 }
 
