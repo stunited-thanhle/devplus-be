@@ -194,7 +194,9 @@ export class UsersController {
       .where('group_user.group_id != :groupId OR group_user.group_id IS NULL', {
         groupId: groupId,
       })
-      .leftJoinAndSelect('user.role', 'role')
+      .innerJoinAndSelect('user.role', 'role', 'role.name != :roleName', {
+        roleName: Roles.Admin,
+      })
       .getMany()
 
     // Filter nhung thang user khong co trong group user
