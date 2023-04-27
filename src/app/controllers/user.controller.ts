@@ -1,7 +1,7 @@
 import { Role } from '@entities/role.entity'
 import { User } from '@entities/user.entity'
 import { ErrorBody } from '@shared/interface/errorInterface'
-import { Request, Response } from 'express'
+import { Request, Response, query } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import * as ValidateHelper from '@shared/helper'
 import { Roles } from '@shared/enums'
@@ -68,22 +68,20 @@ export class UsersController {
   }
 
   async getAllUsers(req: Request, res: Response) {
-    const queryName = req.query.name
+    // const queryName = req.query?.name
 
-    if (queryName.length !== 0) {
-      const users = await dataSourceConfig
-        .getRepository(User)
-        .createQueryBuilder('user')
-        .where('user.username LIKE :userName', { userName: `%${queryName}%` })
-        .leftJoinAndSelect('user.role', 'role')
-        .getMany()
+    // if (queryName?.length !== 0) {
+    //   const users = await dataSourceConfig
+    //     .getRepository(User)
+    //     .createQueryBuilder('user')
+    //     .where('user.username LIKE :userName', { userName: `%${queryName}%` })
+    //     .leftJoinAndSelect('user.role', 'role')
+    //     .getMany()
 
-      return res.status(StatusCodes.OK).json(users)
-    }
+    //   return res.status(StatusCodes.OK).json(users)
+    // }
 
-    const users = await User.find({
-      relations: ['role'],
-    })
+    const users = await User.find()
 
     return res.status(StatusCodes.OK).json(users)
   }
