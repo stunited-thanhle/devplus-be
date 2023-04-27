@@ -227,7 +227,7 @@ export class UsersController {
     return res.status(StatusCodes.OK).json({
       message: 'Successfully',
       statusCode: StatusCodes.OK,
-      users: existedUser,
+      user: existedUser,
     })
   }
 }
