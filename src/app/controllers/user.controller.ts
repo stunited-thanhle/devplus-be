@@ -68,9 +68,23 @@ export class UsersController {
   }
 
   async getAllUsers(req: Request, res: Response) {
+    const queryName = req.query.name
+
+    if (queryName.length !== 0) {
+      const users = await dataSourceConfig
+        .getRepository(User)
+        .createQueryBuilder('user')
+        .where('user.username LIKE :userName', { userName: `%${queryName}%` })
+        .leftJoinAndSelect('user.role', 'role')
+        .getMany()
+
+      return res.status(StatusCodes.OK).json(users)
+    }
+
     const users = await User.find({
       relations: ['role'],
     })
+
     return res.status(StatusCodes.OK).json(users)
   }
   async getUsers(req: Request, res: Response) {
