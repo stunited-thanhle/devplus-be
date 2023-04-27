@@ -89,6 +89,9 @@ export class RequestDayOffController {
             id: currentUserId,
           },
         },
+        order: {
+          id: 'DESC',
+        },
       })
 
       return res.status(StatusCodes.OK).json(requests)
@@ -124,6 +127,9 @@ export class RequestDayOffController {
             id: In(usersInGroups),
           },
         },
+        order: {
+          id: 'DESC',
+        },
       })
 
       return res.status(StatusCodes.OK).json(requests)
@@ -131,6 +137,9 @@ export class RequestDayOffController {
 
     const requests = await RequestEntity.find({
       relations: ['user', 'requestApproves.user', 'dayoffs'],
+      order: {
+        id: 'DESC',
+      },
     })
 
     return res.status(StatusCodes.OK).json(requests)
@@ -231,8 +240,6 @@ export class RequestDayOffController {
 
       sendMessageToDayoff(options, data, user, TITLE_SLACK_NOTIFY.NEW_MESSAGE)
 
-      // console.log(masters)
-
       masters.forEach((item) => {
         const postData = slackNoti(item, data)
         const rq = http.request(options, (res) => {
@@ -294,6 +301,7 @@ export class RequestDayOffController {
         id: userRequestId,
       },
     })
+
     // Lay tat ca group cua user gui request
     const groupRequestByUser = (
       await User.findOne({

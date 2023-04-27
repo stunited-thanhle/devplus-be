@@ -68,7 +68,7 @@ export class UsersController {
   }
 
   async getAllUsers(req: Request, res: Response) {
-    const queryName = req.query.name
+    const queryName = req.query?.name
 
     if (queryName.length !== 0) {
       const users = await dataSourceConfig
