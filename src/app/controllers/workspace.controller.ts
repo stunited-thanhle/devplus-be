@@ -109,6 +109,7 @@ export class WorkspaceController {
       statusCode: StatusCodes.OK,
     })
   }
+
   async deleteWorkspace(req: Request, res: Response) {
     const { id } = req.params
     const target = await Workspace.findOneBy({ id: parseInt(id) })
@@ -238,5 +239,45 @@ export class WorkspaceController {
     return res
       .status(StatusCodes.OK)
       .json({ message: 'Successfully', statusCode: StatusCodes.OK })
+  }
+
+  async getUserNotInWorkSpace(req: Request, res: Response) {
+    const workspaceId = parseInt(req.params?.workspaceId)
+
+    const workspace = await Workspace.findOne({
+      relations: ['users'],
+      where: { id: workspaceId },
+    })
+
+    if (workspace === null) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        message: 'Workspace not found',
+        statusCode: StatusCodes.NOT_FOUND,
+      })
+    }
+
+    const userInWorkspace = workspace.users
+
+    const userNotInWorkspace = await dataSourceConfig
+      .getRepository(User)
+      .createQueryBuilder('user')
+      .leftJoin('workspaces_users_users', 'wuu', 'wuu.usersId = user.id')
+      .where('wuu.workspacesId != :workspaceId OR wuu.workspacesId IS NULL', {
+        workspaceId: workspaceId,
+      })
+      .innerJoinAndSelect('user.role', 'role', 'role.name != :roleName', {
+        roleName: Roles.Admin,
+      })
+      .getMany()
+
+    const filteredUserNotInWorkspace = userNotInWorkspace.filter(
+      (user: User) => !userInWorkspace.find((u: User) => u.id == user.id),
+    )
+
+    return res.status(StatusCodes.OK).json({
+      message: 'Successfully',
+      statusCode: StatusCodes.OK,
+      users: filteredUserNotInWorkspace,
+    })
   }
 }
