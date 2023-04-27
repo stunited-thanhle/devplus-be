@@ -28,9 +28,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^9.0.0",
     "pg": "^8.7.3",
-    "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.3.7",
-    "typeorm-seeding": "^1.6.1"
+    "typeorm": "^0.3.7"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",

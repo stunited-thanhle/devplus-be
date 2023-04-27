@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build:
-      dockerfile: docker/Dockerfile.prod
+      dockerfile: ./Dockerfile
       context: .
       args:
         NODE_IMAGE: node:16.18.0-alpine
