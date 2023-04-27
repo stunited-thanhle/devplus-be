@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  app:
+    build:
+      dockerfile: docker/Dockerfile.prod
+      context: .
+      args:
+        NODE_IMAGE: node:16.18.0-alpine
+        APP_PORT: ${APP_PORT}
+    container_name: ${APP_NAME}-app
+    env_file:
+      - .env
+    ports:
+      - 5002:5002
+    command: sh -c "npm start:prod"
+    volumes:
+      - ./:/home/app
+      - /home/app/node_modules
+    depends_on:
+      - db
+
   db:
     image: ${DB_IMAGE}
     container_name: ${APP_NAME}-db
@@ -10,3 +29,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS}
     ports:
       - 5432:${DB_PORT}
+
+volumes:
+  postgres-data:
