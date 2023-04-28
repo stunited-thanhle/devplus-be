@@ -182,7 +182,6 @@ export class UsersController {
 
     // Những thằng user có trong group
     const userInGroup = group.users
-    console.log('group: ', group)
 
     // Những thằng user không có trong group se co trong group khac van hien thi ra
     const usersNotInGroup = await dataSourceConfig
