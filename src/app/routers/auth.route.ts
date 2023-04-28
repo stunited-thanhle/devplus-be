@@ -27,6 +27,10 @@ class AuthRoute {
       .route('/profile')
       .all(authentication)
       .get(this.authController.getuserProfile)
+    this.router
+      .route('/reset-username')
+      .all(authentication)
+      .put(this.authController.changeUserName)
   }
 }
 export const authRoute = new AuthRoute()
