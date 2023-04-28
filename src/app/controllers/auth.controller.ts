@@ -141,4 +141,41 @@ export class AuthController {
       user: authUser,
     })
   }
+  async changeUserName(req: any, res: Response) {
+    const { newUserName } = req.body
+    console.log(newUserName)
+    const userId = req.user.id
+
+    const fields = ['newUserName']
+
+    const error = ValidateHelper.validate(fields, req.body)
+
+    if (error.length) {
+      const response: ErrorBody = {
+        message: error,
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(response)
+    }
+
+    const authUser = await User.findOne({
+      where: {
+        id: userId,
+      },
+    })
+
+    if (!authUser) {
+      const responseData: ErrorBody = {
+        message: 'UserName is not correct',
+        statusCode: StatusCodes.BAD_REQUEST,
+      }
+      return res.status(StatusCodes.BAD_REQUEST).json(responseData)
+    }
+
+    authUser.username = newUserName
+    await authUser.save()
+    return res
+      .status(StatusCodes.OK)
+      .json({ message: 'Successfully', statusCode: StatusCodes.OK })
+  }
 }
