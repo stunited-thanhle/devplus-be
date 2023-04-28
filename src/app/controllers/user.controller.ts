@@ -1,7 +1,7 @@
 import { Role } from '@entities/role.entity'
 import { User } from '@entities/user.entity'
 import { ErrorBody } from '@shared/interface/errorInterface'
-import { Request, Response, query } from 'express'
+import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import * as ValidateHelper from '@shared/helper'
 import { Roles } from '@shared/enums'
